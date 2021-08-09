@@ -1,0 +1,134 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspaceName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "location": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "identityType": {
+            "value": "systemAssigned"
+        },
+        "primaryUserAssignedIdentityResourceGroup": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "primaryUserAssignedIdentityName": {
+            "value": ""
+        },
+        "cmkUserAssignedIdentityResourceGroup": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "cmkUserAssignedIdentityName": {
+            "value": ""
+        },
+        "tagValues": {
+            "value": {}
+        },
+        "storageAccountOption": {
+            "value": "new"
+        },
+        "storageAccountName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "storageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "storageAccountBehindVNet": {
+            "value": "false"
+        },
+        "storageAccountResourceGroupName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "keyVaultOption": {
+            "value": "new"
+        },
+        "keyVaultName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "keyVaultBehindVNet": {
+            "value": "false"
+        },
+        "keyVaultResourceGroupName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "applicationInsightsOption": {
+            "value": "new"
+        },
+        "applicationInsightsName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "applicationInsightsResourceGroupName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "containerRegistryOption": {
+            "value": "none"
+        },
+        "containerRegistryName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "containerRegistrySku": {
+            "value": "Standard"
+        },
+        "containerRegistryResourceGroupName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "containerRegistryBehindVNet": {
+            "value": "false"
+        },
+        "vnetOption": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "vnetName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "vnetResourceGroupName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "vnetLocation": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "addressPrefixes": {
+            "value": [
+              "10.0.0.0/16"
+            ]
+        },
+        "subnetOption": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "subnetName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "subnetPrefix": {
+            "value": "10.0.0.0/24"
+        },
+        "adbWorkspace": {
+            "value": ""
+        },
+        "confidential_data": {
+            "value": "false"
+        },
+        "encryption_status": {
+            "value": "Disabled"
+        },
+        "cmk_keyvault": {
+            "value": ""
+        },
+        "resource_cmk_uri": {
+            "value": ""
+        },
+        "privateEndpointType": {
+            "value": "none"
+        },
+        "encryption_cosmosdb_armid": {
+            "value": ""
+        },
+        "encryption_storage_armid": {
+            "value": ""
+        },
+        "encryption_search_armid": {
+            "value": ""
+        }
+    }
+}

@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment": {
+            "type": "string",
+            "defaultValue": "dev",
+            "metadata": {
+                "description":"Location for all services"
+                 }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "westeurope",
+            "metadata": {
+                "description": "Location matches resource group"
+                }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case / data product name"
+                }
+            }
+    },
+    "functions": [],
+    "variables": {
+        "locationInfo": {
+            "westeurope":{
+                "abbreviation": "we"
+            },
+            "northeurope":{
+                "abbreviation": "ne"
+            },
+            "uksouth":{
+                "abbreviation": "uks"
+            }
+        },
+        "region": "[variables('locationInfo')[parameters('location')].abbreviation]",
+        "rsgNameEnv": "[concat(parameters('dataProduct'),'-dp-',variables('region'),'-',parameters('environment'),'-rsg')]",
+        "rsgNameShared": "[concat('shared-',variables('region'),'-',if(equals(parameters('environment'),'prod'),'prod','devtest'),'-rsg')]"
+    },
+    "resources": [
+        {
+            "type":"Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsgNameEnv')]",
+            "location": "[parameters('location')]"
+        },
+        {
+            "type":"Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-05-01",
+            "name": "[variables('rsgNameShared')]",
+            "location": "[parameters('location')]"
+        }
+    ],
+    "outputs": {
+        "rsgNameEnv": {
+            "type": "string",
+            "value": "[variables('rsgNameEnv')]"
+        },
+        "rsgNameShared": {
+            "type": "string",
+            "value": "[variables('rsgNameShared')]"
+        }
+    }
+}

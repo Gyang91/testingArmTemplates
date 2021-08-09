@@ -1,0 +1,270 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnsLabelPrefix": {
+      "type": "string",
+      "defaultValue": "[toLower(format('{0}-{1}', parameters('virtualMachineName'), uniqueString(resourceGroup().id, parameters('virtualMachineName'))))]",
+      "metadata": {
+        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "publicIPAllocationMethod": {
+      "type": "string",
+      "defaultValue": "Static",
+      "allowedValues": [
+        "Dynamic",
+        "Static"
+      ],
+      "metadata": {
+        "description": "Allocation method for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "publicIpSku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "SKU for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "OSVersion": {
+      "type": "string",
+      "defaultValue": "2019-Datacenter",
+      "metadata": {
+        "description": "The OS version for the VM. This will pick a fully patched image of this given version."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "publicIpOption": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Determines whether or not a new public IP should be provisioned."
+      }
+    },
+    "dataProduct": {
+      "type": "string",
+      "metadata": {
+        "description": "Use Case name"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "devtest",
+      "metadata": {
+        "description": "Location for all services"
+      }
+    },
+    "virtualMachineName": {
+      "type": "string"
+    },
+    "computerName": {
+      "type": "string",
+      "metadata": {
+        "description": "description"
+      }
+    },
+    "vmManagedIdentityOption": {
+      "type": "string",
+      "metadata": {
+        "description": "Determines whether or not to activate the managed identity of the vm."
+      }
+    },
+    "resourceTags": {
+      "type": "object"
+    },
+    "dataProductSize": {
+      "type": "string",
+      "defaultValue": "s",
+      "allowedValues": [
+        "s",
+        "m",
+        "l"
+      ],
+      "metadata": {
+        "description": "Tshirt size for the data product"
+      }
+    },
+    "countryCode": {
+      "type": "string",
+      "defaultValue": "cs",
+      "metadata": {
+        "description": "country code"
+      }
+    },
+    "adminUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin User name of the Azure VM"
+      }
+    },
+    "adminPwdSecretName": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin Password secret Name for the Key Vault"
+      }
+    },
+    "storageUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Endpoint of the Azure Blob Storage"
+      }
+    }
+  },
+  "functions": [],
+  "variables": {
+    "vmSizeConfig": {
+      "s": {
+        "vmSize": "Standard_D2_v3"
+      },
+      "m": {
+        "vmSize": "Standard_D4s_v3"
+      },
+      "l": {
+        "vmSize": "Standard_D4s_v3"
+      }
+    },
+    "vmSize": "[variables('vmSizeConfig')[parameters('dataProductSize')].vmSize]",
+    "keyVaultName": "[toLower(concat(parameters('countryCode'),'-sh-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]",
+    "nicName": "[toLower(concat(parameters('virtualMachineName'),'-nic'))]",
+    "adminPassword": "[concat('P', uniqueString(resourceGroup().id,deployment().name,parameters('virtualMachineName')), 'x', '!')]",
+    "publicIPAddressName": "[concat(parameters('virtualMachineName'), '-pip')]",
+    "snetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-snet')]",
+    "vnetName": "[concat(parameters('dataProduct'),'-','sh','-vnet')]",
+    "publicIP": {
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPAddressName')))]"
+      }
+    },
+    "privateIp": {
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets/', variables('vnetName'), variables('snetName'))]"
+      }
+    }
+  },
+  "resources": [
+    {
+      "condition": "[parameters('publicIpOption')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2019-09-01",
+      "name": "[variables('publicIPAddressName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('publicIpSku')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('nicName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": "[if(parameters('publicIpOption'), union(variables('privateIp'), variables('publicIp')),variables('privateIp'))]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-03-01",
+      "name": "[parameters('virtualMachineName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "[parameters('vmManagedIdentityOption')]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('computerName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('OSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('virtualMachineName'),'_OSDisk')]",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[parameters('storageUri')]" 
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'),'/',parameters('adminUserName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "value": "[parameters('adminUsername')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'),'/',parameters('adminPwdSecretName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "value": "[variables('adminPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+      ]
+    }
+  ],
+  "outputs": {}
+}

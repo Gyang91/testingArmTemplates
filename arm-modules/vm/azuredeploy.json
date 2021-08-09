@@ -1,0 +1,350 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnsLabelPrefix": {
+      "type": "string",
+      "defaultValue": "[toLower(format('{0}-{1}', parameters('virtualMachineName'), uniqueString(resourceGroup().id, parameters('virtualMachineName'))))]",
+      "metadata": {
+        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "publicIPAllocationMethod": {
+      "type": "string",
+      "defaultValue": "Static",
+      "allowedValues": [
+        "Dynamic",
+        "Static"
+      ],
+      "metadata": {
+        "description": "Allocation method for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "publicIpSku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "SKU for the Public IP used to access the Virtual Machine."
+      }
+    },
+    "OSVersion": {
+      "type": "string",
+      "defaultValue": "2019-Datacenter",
+      "metadata": {
+        "description": "The OS version for the VM. This will pick a fully patched image of this given version."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "publicIpNewOrExisting": {
+      "type": "string",
+      "defaultValue": "new",
+      "allowedValues": [
+        "none",
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Determines whether or not a new public IP should be provisioned."
+      }
+    },
+    "addressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Vnet CIDR"
+      }
+    },
+    "subnetPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet CIDR"
+      }
+    },
+    "virtualNetworkNewOrExisting": {
+      "type": "string",
+      "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Identifies whether to use new or existing Virtual Network"
+      }
+    },
+    "dataProduct": {
+      "type": "string",
+      "metadata": {
+        "description": "Use Case name"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "d",
+      "metadata": {
+        "description": "Location for all services"
+      }
+    },
+    "virtualMachineName": {
+      "type": "string"
+    },
+    "computerName": {
+      "type": "string",
+      "metadata": {
+        "description": "description"
+      }
+    },
+    "vmManagedIdentityOption": {
+      "type": "string",
+      "defaultValue": "None",
+      "allowedValues": [
+        "SystemAssigned",
+        "UserAssigned",
+        "None",
+        "SystemAssigned, UserAssigned"
+      ],
+      "metadata": {
+        "description": "Determines whether or not to activate the managed identity of the vm."
+      }
+    },
+    "resourceTags": {
+      "type": "object"
+    },
+    "dataProductSize": {
+      "type": "string",
+      "defaultValue": "s",
+      "allowedValues": [
+        "s",
+        "m",
+        "l"
+      ],
+      "metadata": {
+        "description": "Tshirt size for the data product"
+      }
+    },
+    "countryCode": {
+      "type": "string",
+      "defaultValue": "cs",
+      "metadata": {
+        "description": "country code"
+      }
+    }
+  },
+  "functions": [],
+  "variables": {
+    "vmSizeConfig": {
+      "s": {
+        "vmSize": "Standard_D2_v3"
+      },
+      "m": {
+        "vmSize": "Standard_D4s_v3"
+      },
+      "l": {
+        "vmSize": "Standard_D4s_v3"
+      }
+    },
+    "vmSize": "[variables('vmSizeConfig')[parameters('dataProductSize')].vmSize]",
+    "storageAccountName": "[toLower(concat('debootdiags',parameters('environment'),'sacc'))]",
+    "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]",
+    "nicName": "[toLower(concat('de-',parameters('dataProduct'),'-',parameters('environment'),'-nic'))]",
+    "networkSecurityGroupName": "[toLower(concat('de-',parameters('dataProduct'),'-',parameters('environment'),'-nsg'))]",
+    "adminUsername": "vmadmin",
+    "adminPassword": "[concat('P', uniqueString(resourceGroup().id,deployment().name,parameters('virtualMachineName')), 'x', '!')]",
+    "publicIPAddressName": "[concat(parameters('virtualMachineName'), '-pip')]",
+    "snetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-snet')]",
+    "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+    "publicIP": {
+      "publicIPAddress": {
+        "id": "[resourceId('Microsoft.Network/publicIPAddresses',  concat(variables('publicIPAddressName')))]"
+      }
+    },
+    "privateIp": {
+      "privateIPAllocationMethod": "Dynamic",
+      "subnet": {
+        "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets/', variables('vnetName'), variables('snetName'))]"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('storageAccountName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage"
+    },
+    {
+      "condition": "[equals(parameters('publicIpNewOrExisting'),'new')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2019-09-01",
+      "name": "[variables('publicIPAddressName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('publicIpSku')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-09-01",
+      "name": "[variables('networkSecurityGroupName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 1000,
+              "sourceAddressPrefix": "*",
+              "protocol": "Tcp",
+              "destinationPortRange": "3389",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[equals(parameters('virtualNetworkNewOrExisting'), 'new')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2019-09-01",
+      "name": "[variables('vnetName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('snetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2020-11-01",
+      "name": "[variables('nicName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": "[if(equals(parameters('publicIpNewOrExisting'), 'none'), variables('privateIp'), union(variables('privateIp'), variables('publicIp')))]"
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-03-01",
+      "name": "[parameters('virtualMachineName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "[parameters('vmManagedIdentityOption')]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('computerName')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[variables('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('OSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('virtualMachineName'),'_OSDisk')]",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'),'/','vmAdminUser')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "value": "[variables('adminUsername')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-04-01-preview",
+      "name": "[concat(variables('keyVaultName'),'/','vmAdminPwd')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "value": "[variables('adminPassword')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+      ]
+    }
+  ],
+  "outputs": {}
+}

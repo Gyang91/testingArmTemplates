@@ -1,0 +1,247 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+          "environment": {
+            "type": "string",
+            "defaultValue": "d",
+            "metadata": {
+                "description": "Development environment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location matches resource group"
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case name"
+            }
+        },
+          "vnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.0.0/16",
+            "metadata": {
+                "description": "Vnet CIDR"
+            }
+        },
+        "privateSubnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.1.0/24",
+            "metadata": {
+                "description": "CIDR range for the private subnet."
+            }
+        },
+        "publicSubnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.2.0/24",
+            "metadata": {
+                "description": "CIDR range for the public subnet."
+            }
+        },
+           "resourceTags": {
+            "type": "object"
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "networkSecurityGroupName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-dbr-',parameters('environment'),'-nsg'))]",
+        "nsgId":"[resourceId('Microsoft.Network/networkSecurityGroups',variables('networkSecurityGroupName'))]",
+        "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
+        "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
+        "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "serviceEndpointsAll": [
+        {
+          "service": "Microsoft.Storage"
+        },
+        {
+          "service": "Microsoft.KeyVault"
+        },
+        {
+          "service": "Microsoft.ContainerRegistry"
+        },
+        {
+          "service": "Microsoft.Sql"
+        }
+      ]
+    },
+    "resources": [
+        {
+            "comments": "Deploy NSG for public subnet ADB",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "tags": "[parameters('resourceTags')]",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('networkSecurityGroupName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Microsoft.Databricks-workspace_UseOnly_databricks-worker-to-worker-inbound",
+                        "properties": {
+                            "description": "Required for worker nodes communication within a cluster.",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-databricks-webapp",
+                        "properties": {
+                            "description": "Required for workers communication with Databricks Webapp.",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "AzureDatabricks",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-sql",
+                        "properties": {
+                            "description": "Required for workers communication with Azure SQL services.",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3306",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Sql",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Outbound"
+                        }
+                    },
+
+                    {
+                        "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-storage",
+                        "properties": {
+                            "description": "Required for workers communication with Azure Storage services.",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "Storage",
+                            "access": "Allow",
+                            "priority": 102,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-worker-outbound",
+                        "properties": {
+                            "description": "Required for worker nodes communication within a cluster.",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 103,
+                            "direction": "Outbound"
+                        }
+                    },
+                    {
+                        "name": "Microsoft.Databricks-workspaces_UseOnly_databricks-worker-to-eventhub",
+                        "properties": {
+                            "description": "Required for worker communication with Azure Eventhub services.",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9093",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "EventHub",
+                            "access": "Allow",
+                            "priority": 104,
+                            "direction": "Outbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "comments": "Deploy Virtual Network for template",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "tags": "[parameters('resourceTags')]",
+            "location": "[parameters('location')]",
+            "name": "[variables('vnetName')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": ["[parameters('vnetCidr')]"]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('adbFeSnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('publicSubnetCidr')]",
+                            "networkSecurityGroup": {
+                                "id": "[variables('nsgId')]"
+                            },
+                            "serviceEndpoints": "[variables('serviceEndpointsAll')]",
+                            "delegations": [
+                                {
+                                    "name": "databricks-del-public",
+                                    "properties": {
+                                        "serviceName": "Microsoft.Databricks/workspaces"
+                                    }
+
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[variables('adbBeSnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('privateSubnetCidr')]",
+                            "networkSecurityGroup": {
+                                "id": "[variables('nsgId')]"
+                            },
+                            "serviceEndpoints": "[variables('serviceEndpointsAll')]",
+                            "delegations": [
+                                {
+                                    "name": "databricks-del-private",
+                                    "properties": {
+                                        "serviceName": "Microsoft.Databricks/workspaces"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+            ]
+        }
+    ],
+    "outputs": {
+        "nsgId": {
+            "type": "string",
+            "value": "[variables('nsgId')]"
+        },
+        "vnetId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+        },
+        "vnetName": {
+            "type": "string",
+            "value": "[variables('vnetName')]"
+        }
+    }
+}

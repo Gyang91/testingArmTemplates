@@ -1,0 +1,415 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingDataFactoryVersion": {
+      "type": "string",
+      "defaultValue": "V2",
+      "metadata": {
+        "description": "your existing data factory version"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "dt",
+      "metadata": {
+        "description": "Ldveelopment environment: dt = devtest, p = prod"
+      }
+    },
+    "dataProduct": {
+      "type": "string",
+      "metadata": {
+        "description": "Use Case name"
+      }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {
+        "environment": "devtest",
+        "dataproduct": "[parameters('dataProduct')]",
+        "deployment": "ARM"
+      }
+    },
+    "dataProductSize": {
+      "type": "string",
+      "defaultValue": "s",
+      "allowedValues": [
+        "s",
+        "m",
+        "l"
+      ],
+      "metadata": {
+        "description": "Tshirt size for the data product"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "CIDR of the virtual network"
+      }
+    },
+    "countryCode": {
+      "type": "string",
+      "defaultValue": "cs",
+      "metadata": {
+        "description": "country code"
+      }
+    },
+    "keyVaultBehindVNet": {
+      "type": "bool",
+      "defaultValue": true,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Determines whether or not to put the key vault behind VNet"
+      }
+    },
+    "storageAccountBehindVNet": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Determines whether or not to put the storage account behind VNet"
+      }
+    },
+    "vmManagedIdentityOption": {
+      "type": "string",
+      "defaultValue": "None",
+      "allowedValues": [
+        "SystemAssigned",
+        "UserAssigned",
+        "None",
+        "SystemAssigned, UserAssigned"
+      ],
+      "metadata": {
+        "description": "Determine to set a managed identity or not"
+      }
+    },
+    "publicIpOption": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ],
+      "metadata": {
+        "description": "Determines whether or not a new public IP should be provisioned."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+      "nextHopType": {
+      "type": "string",
+      "defaultValue": "VirtualAppliance",
+      "allowedValues": [
+        "VirtualNetworkGateway",
+        "VnetLocal",
+        "Internet",
+        "VirtualAppliance"
+      ],
+      "metadata": {
+        "description": "The type of Azure hop the packet should be sent to"
+      }
+    },
+    "nextHopIpAdress": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP address packets should be forwarded to. Next hop values are only allowed in routes where the next hop type is VirtualAppliance."
+      }
+    },
+      "rtDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy a route table"
+            }
+        }
+  },
+  "variables": {
+    "nodeCountConfig": {
+      "dt": {
+        "nodeCount": 1
+      },
+      "p": {
+        "nodeCount": 2
+      }
+    },
+    "nodeCount": "[variables('nodeCountConfig')[parameters('environment')].nodeCount]",
+    "vnetName": "[concat(parameters('dataProduct'),'-','sh','-vnet')]",
+    "snetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-snet')]",
+    "subnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('snetName'))]",
+    "storageAccountName": "[toLower(concat(parameters('countryCode'),'bootdiag',parameters('dataProduct'),parameters('environment'),'sacc'))]",
+    "networkRuleSetBehindVNet": {
+      "defaultAction": "deny",
+      "bypass": "AzureServices",
+      "virtualNetworkRules": [
+        {
+          "action": "Allow",
+          "id": "[variables('subnet')]"
+        }
+      ]
+    },
+    "networkRuleSetDefault": {
+      "defaultAction": "Allow",
+      "bypass": "AzureServices"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('storageAccountName')]",
+      "tags": "[parameters('resourceTags')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "networkAcls": "[if(parameters('storageAccountBehindVNet'), variables('networkRuleSetBehindVNet'), variables('networkRuleSetDefault'))]"
+      },
+      "kind": "Storage",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'lkTemplNetwork')]"
+      ]
+    },
+    {
+      "condition": "[parameters('rtDeployment')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "lkTemplRt",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'rt/azuredeploy.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dataProduct": {
+            "value": "[parameters('dataProduct')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "resourceTags": {
+            "value": "[parameters('resourceTags')]"
+          },
+          "nextHopIpAdress": {
+            "value": "[parameters('nextHopIpAdress')]"
+          },
+          "nextHopType": {
+            "value": "[parameters('nextHopType')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "lkTemplNetwork",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'network/azuredeploy.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "addressPrefix": {
+            "value": "[parameters('vnetAddressPrefix')]"
+          },
+          "dataProduct": {
+            "value": "[parameters('dataProduct')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "resourceTags": {
+            "value": "[parameters('resourceTags')]"
+          },
+          "routeTableId": {
+            "value": "[if(parameters('rtDeployment'),reference('lkTemplRt').outputs.routeTableId.value,json('null'))]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'lkTemplRt')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "lkTemplAkv",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'akv/azuredeploy.json')]",
+          //"relativePath":"./arm-modules/akv/azuredeploy.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "dataProduct": {
+            "value": "[parameters('dataProduct')]"
+          },
+          "resourceTags": {
+            "value": "[parameters('resourceTags')]"
+          },
+          "countryCode": {
+            "value": "[parameters('countryCode')]"
+          },
+          "keyVaultBehindVNet": {
+            "value": "[parameters('keyVaultBehindVNet')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'lkTemplNetwork')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "lkTempAdf",
+      "resourceGroup": "[resourceGroup().name]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'adf/azuredeploy.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dataProduct": {
+            "value": "[parameters('dataProduct')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "selfHostedIRFlag": {
+            "value": true
+          },
+          "resourceTags": {
+            "value": "[parameters('resourceTags')]"
+          },
+          "countryCode": {
+            "value": "[parameters('countryCode')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "[concat('VMtemplate-', copyIndex())]",
+      "copy": {
+        "name": "vmcopy",
+        "count": "[variables('nodeCount')]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'vm/azuredeploy.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "virtualMachineName": {
+            "value": "[concat(parameters('countryCode'),'-sh-',parameters('dataProduct'),parameters('environment'),'-',copyIndex(),'-vm')]"
+          },
+          "computerName": {
+            "value": "[concat(parameters('environment'),'-',copyIndex(),'-vm')]"
+          },
+          "publicIpOption": {
+            "value": "[parameters('publicIpOption')]"
+          },
+          "dataProduct": {
+            "value": "[parameters('dataProduct')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "vmManagedIdentityOption": {
+            "value": "[parameters('vmManagedIdentityOption')]"
+          },
+          "resourceTags": {
+            "value": "[parameters('resourceTags')]"
+          },
+          "dataProductSize": {
+            "value": "[parameters('dataProductSize')]"
+          },
+          "adminPwdSecretName": {
+            "value": "[concat('vm',copyIndex(),'adminPwd')]"
+          },
+          "adminUserName": {
+            "value": "[concat('vm',copyIndex(),'adminUser')]"
+          },
+          "storageUri": {
+            "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'lkTempAdf')]",
+        "[resourceId('Microsoft.Resources/deployments', 'lkTemplNetwork')]",
+        "[resourceId('Microsoft.Resources/deployments', 'lkTemplAkv')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "apiVersion": "2021-04-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat('IRInstalltemplate-', copyIndex())]",
+      "copy": {
+        "name": "irInstall",
+        "count": "[variables('nodeCount')]",
+        "mode": "serial"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'irInstall/azuredeploy.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "existingDataFactoryVersion": {
+            "value": "[parameters('existingDataFactoryVersion')]"
+          },
+          "irId": {
+            "value": "[reference(resourceId(resourceGroup().name, 'Microsoft.Resources/deployments', 'lkTempAdf')).outputs.irId.value]"
+          },
+          "virtualMachineName": {
+            "value": "[concat(parameters('countryCode'),'-sh-',parameters('dataProduct'),parameters('environment'),'-',copyIndex(),'-vm')]"
+          },
+          "scriptUrl": {
+            "value": "https://raw.githubusercontent.com/gepirvu/armtemplates/main/arm-modules/sharedRes/irInstall/irInstall.ps1"
+            //Uncomment below if deployment is from public available Azure Storage
+            //"value": "[uri(deployment().properties.templateLink.uri, 'irInstall/irInstall.ps1')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "vmcopy"
+      ]
+    }
+  ],
+  "outputs": {
+    "dataFactoryResourceId": {
+      "type": "string",
+      "value": "[reference('lkTempAdf').outputs.dataFactoryResourceId.value]"
+    },
+    "sharedDataFactoryPrincipalId": {
+      "type": "string",
+      "value": "[reference('lkTempAdf').outputs.sharedDataFactoryPrincipalId.value]"
+    }
+  }
+}

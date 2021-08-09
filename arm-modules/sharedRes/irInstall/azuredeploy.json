@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "existingDataFactoryVersion": {
+          "defaultValue": "V2",
+          "type": "string",
+          "metadata": {
+              "description": "Version of the Azure Data Factory Servic"
+          }
+      },
+      "irId": {
+        "type": "securestring",
+        "metadata": {
+            "description": "MSI of the Azure Data Factory"
+        }
+      },
+      "virtualMachineName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the Virtual Machine"
+        }
+      },
+       "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location matches resource group"
+            }
+        },
+      "scriptUrl": {
+        "type": "string"
+      }
+    },
+    "variables": {},
+    "resources": [
+      {
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "name": "[concat(parameters('virtualMachineName'), '/' ,parameters('virtualMachineName'), 'installGW')]",
+        "apiVersion": "2019-07-01",
+        "location": "[parameters('location')]",
+        "tags": {
+          "vmname": "[parameters('virtualMachineName')]"
+        },
+        "properties": {
+          "publisher": "Microsoft.Compute",
+          "type": "CustomScriptExtension",
+          "typeHandlerVersion": "1.7",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": [
+              "[parameters('scriptURL')]"
+            ]
+          },
+          "protectedSettings": {
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File irInstall.ps1 ', if(equals(parameters('existingDataFactoryVersion'), 'V2'), listAuthKeys(parameters('irId'), '2017-09-01-preview').authKey1, listAuthKeys(parameters('irId'), '2015-10-01').key1))]"
+            ////Uncomment below if deployment is from public available Azure Storage
+            //"commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File arm-modules/sharedRes/irInstall/irInstall.ps1 ', if(equals(parameters('existingDataFactoryVersion'), 'V2'), listAuthKeys(parameters('irId'), '2017-09-01-preview').authKey1, listAuthKeys(parameters('irId'), '2015-10-01').key1))]"
+          }
+        }
+      }
+    ]
+  }
+  

@@ -1,0 +1,139 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location of Azure Service"
+            }
+        },
+        "storageSku": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_ZRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+            ],
+            "metadata": {
+                "description": "Defines the type of storage account to use for the data lake store"
+            }
+        },
+        "environment": {
+            "type": "string",
+            "defaultValue":"d",
+            "metadata": {
+                "description": "Development environment"
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Data Product or Use Case Name"
+            }
+        },
+        "storageAccountBehindVNet": {
+            "type": "bool",
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Determines whether or not to put the storage account behind VNet"
+            }
+        },
+           "resourceTags": {
+            "type": "object"
+        },
+                "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
+        }
+     },
+    "variables": {
+        "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
+        "dlsFsName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-fs')]",
+        "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
+        "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
+        "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
+        "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "computeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]",
+        "adbFeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbFeSnetName'))]",
+        "adbBeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbBeSnetName'))]",
+        "networkRuleSetBehindVNet": {
+            "defaultAction": "deny",
+            "bypass": "AzureServices",
+            "virtualNetworkRules": [
+                {
+                    "action": "Allow",
+                    "id": "[variables('computeSubnet')]"
+                },
+                {
+                    "action": "Allow",
+                    "id": "[variables('adbFeSubnet')]"
+                },
+                {
+                    "action": "Allow",
+                    "id": "[variables('adbBeSubnet')]"
+                }
+            ]
+        },
+        "networkRuleSetDefault": {
+            "defaultAction": "Allow",
+            "bypass": "AzureServices"
+        }
+    },
+    "functions": [],
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "name": "[variables('storageAccountName')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('storageSku')]"
+            },
+            "properties": {
+                "accessTier": "Hot",
+                "isHnsEnabled": true,
+                "supportsHttpsTrafficOnly": true,
+                "networkAcls": "[if(parameters('storageAccountBehindVNet'), variables('networkRuleSetBehindVNet'), variables('networkRuleSetDefault'))]"
+            },
+            "resources": [
+                {
+                    "name": "[concat('default/',variables('dlsFsName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                    ],
+                    "properties": {
+                        "publicAccess": "None"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "storageName": {
+            "type": "string",
+            "value": "[variables('storageAccountName')]"
+        },
+         "storageAccountConnectionString": {
+            "type": "string",
+            "value": "[reference(variables('storageAccountName')).primaryEndpoints.dfs]"     
+        },
+        "dlsFsName": {
+            "type": "string",
+            "value": "[variables('dlsFsName')]"
+        }
+    }
+}

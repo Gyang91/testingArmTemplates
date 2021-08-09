@@ -1,0 +1,260 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "tenantId": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId]",
+            "metadata": {
+                "description": "Tenant Id of current subscription"
+            }
+        },
+        "environment": {
+            "type": "string",
+            "defaultValue": "d",
+            "metadata": {
+                "description":"Development environment"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location matches resource group"
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case name"
+            }
+        },
+        "resourceTags": {
+            "type": "object"
+        },
+        "adlsConnectionstring": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Connectionstring of the Azure Data Lake Store"
+            }
+        },
+        "aSqlSecretName": {
+            "type": "string",
+            "metadata": {
+                "description": "Secretname to the Azure SQL DB in the Azure Key Vault"
+            }
+        },
+        "sharedIrResourceId": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Resource Id of the hub/shared Azure Data Factory"
+            }
+        },
+        "linkedServiceFlag": {
+            "type": "bool",
+            "metadata": {
+                "description": "Flag to activate or deactivate the resource for the Azure Data Factory - Linked Servicce"
+            }
+        },
+        "linkedIRFlag": {
+            "type": "bool",
+            "metadata": {
+                "description": "Flag to activate or deactivate the resource for the Azure Data Factory - Linked self hosted integration runtime"
+            }
+        },
+        "adbWorkspaceUrl": {
+            "type": "string",
+            "defaultValue": "adb-0000000000000000.00.azuredatabricks.net",
+            "metadata": {
+                "description": "Azure Databricks Workspace Url"
+            }
+        },
+        "adbWorkSpaceResourceId": {
+            "type": "string",
+            "defaultValue": "000000000000000000000000000000000000000000000",
+            "metadata": {
+                "description": "Azure Databricks Workspace ResourceId"
+            }
+        },
+                "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "dataFactoryName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-df'))]",
+        "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]",
+        "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DataFactory/factories",
+            "apiVersion": "2018-06-01",
+            "name": "[variables('dataFactoryName')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {},
+            "resources": [
+                {
+                    "condition": "[parameters('linkedIRFlag')]",
+                    "type": "integrationRuntimes",
+                    "apiVersion": "2018-06-01",
+                    "name": "sharedIr",
+                    "properties": {
+                        "type": "SelfHosted",
+                        "description": "Linked Integration Runtime from the hub/shared Azure Data Factory",
+                        "typeProperties": {
+                            "linkedInfo":{
+                                "resourceId": "[parameters('sharedIrResourceId')]",
+                                "authorizationType": "Rbac"
+                            }
+                        }
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                {
+                    "condition": "[parameters('linkedServiceFlag')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_dls",
+                    "properties": {
+                        "type": "AzureBlobFS",
+                        "typeProperties": {
+                            "url": "[parameters('adlsConnectionstring')]"
+                        },
+                        "description": "[concat('Linked Service to the Azure Data Lake Store in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                {
+                    "condition": "[parameters('linkedServiceFlag')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_kv",
+                    "properties": {
+                        "type": "AzureKeyVault",
+                        "typeProperties": {
+                            "baseUrl": "[concat('https://',variables('keyVaultName'),'.vault.azure.net/')]" 
+                        },
+                        "description": "[concat('Linked Service to the Azure Key Vault in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                {
+                    "condition": "[parameters('linkedServiceFlag')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_asql",
+                    "properties": {
+                        "type": "AzureSqlDatabase",
+                        "typeProperties": {
+                            "connectionString": {
+                                "type": "AzureKeyVaultSecret",
+                                "store":{
+                                    "referenceName": "arm_ls_kv",
+                                    "type": "LinkedServiceReference"
+                                },
+                                "secretName": "[parameters('aSqlSecretName')]"
+                            }
+                        },
+                        "description": "[concat('Linked Service to the Azure SQL Database in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories/linkedservices', variables('dataFactoryName'), 'arm_ls_kv')]",
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                {
+                "condition": "[parameters('linkedServiceFlag')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_aml",
+                    "properties": {
+                        "type": "AzureMLService",
+                        "typeProperties": {
+                            "subscriptionId": "[subscription().subscriptionId]",
+                            "resourceGroupName": "[resourceGroup().name]",
+                            "mlWorkspaceName": "[variables('machineLearningWorkspaceName')]",
+                            "authentication": "MSI"
+                        },
+                        "description": "[concat('Linked Service to the Azure ML Service in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                {
+                "condition": "[parameters('linkedServiceFlag')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_adb",
+                    "properties": {
+                        "type": "AzureDatabricks",
+                        "typeProperties": {
+                            
+                            "domain": "[parameters('adbWorkspaceUrl')]",
+                            "authentication": "MSI",
+                            "workspaceResourceId": "[parameters('adbWorkSpaceResourceId')]",
+                            "newClusterNodeType": "Standard_DS12_v2",
+                            "newClusterNumOfWorker": "1:4",
+                            "newClusterSparkEnvVars": {
+                                "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+                            },
+                            "newClusterVersion": "8.4.x-scala2.12",
+                            "newClusterInitScripts": []
+                        },
+                        "description": "[concat('Linked Service to the Azure Databricks in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                }
+            ]
+        },
+              {
+            "type": "Microsoft.KeyVault/vaults/accessPolicies",
+            "name": "[concat(variables('keyVaultName'),'/add')]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "accessPolicies": [
+                    {
+                        "tenantId": "[parameters('tenantId')]",
+                        "objectId": "[reference(resourceId(resourceGroup().name,'Microsoft.DataFactory/factories',variables('dataFactoryName')),'2018-06-01','Full').identity.principalId]",
+                        "permissions": {
+                            "secrets": [
+                                "get",
+                                "list"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+            ]
+        }
+    ],
+    "outputs": {
+        "dataFactoryPrincipalId": {
+            "type": "string",
+            "value": "[reference(resourceId(resourceGroup().name,'Microsoft.DataFactory/factories',variables('dataFactoryName')),'2018-06-01','Full').identity.principalId]"
+        },
+        "dataFactoryName": {
+            "type": "string",
+            "value": "[variables('dataFactoryName')]"
+        }
+    }
+}
