@@ -47,7 +47,6 @@
         "subnetPrefix": "[if(equals(parameters('environment'),'dt'),replace(parameters('addressPrefix'),'/23','/24'),concat('10.249.',variables('subnetCidrPositionLogic'),'.0/24'))]",
         "vnetName": "[concat(parameters('dataProduct'),'-sh-','vnet')]",
         "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "routeTableName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-rt')]",
         "serviceEndpointsAll": [
             {
                 "service": "Microsoft.Storage"
@@ -110,8 +109,7 @@
                 ]
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-                "[resourceId('Microsoft.Network/routeTables', variables('routeTableName'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
             ]
         }
     ],
