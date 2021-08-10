@@ -192,12 +192,6 @@ $jdkPath = "$PWD\openjdk8.msi"
 Download-AdoptOpenJdk $url $jdkPath
 Install-AdoptOpenJdk $jdkPath
 
-if (-not [Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine')) { 
 $env:JAVA_HOME = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine') + "jre\"
 [Environment]::SetEnvironmentVariable("JAVA_HOME", $env:JAVA_HOME, [EnvironmentVariableTarget]::Machine)
 Write-Host "Finish writing system environment variable JAVA_HOME"
-}
-else {
-    [Environment]::SetEnvironmentVariable("JAVA_HOME", [Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine'), [EnvironmentVariableTarget]::Machine)
-	Write-Host "System environment variable JAVA_HOME already exists"
-}
