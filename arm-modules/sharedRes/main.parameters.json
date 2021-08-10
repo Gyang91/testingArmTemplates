@@ -3,16 +3,21 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "dataProduct": {
-            "value": "tsts"
+            "value": "test"
         },
         "environment": {
-            "value": "p"
+            "value": "d"
         },
         "dataProductSize": {
             "value": "s"
         },
         "vnetAddressPrefix": {
-            "value": "10.249.20.0/22"
+            "value": "10.249.20.0/23"
+        },
+        "rtDeployment": {
+            "value": false
+        },
+        "publicIpOption": {
+            "value": true
         }
-    }
 }
