@@ -123,7 +123,7 @@
     },
     "nextHopIpAdress": {
       "type": "string",
-      "defaultValue" : "0.0.0.0",
+      "defaultValue" : "10.248.51.4",
       "metadata": {
         "description": "The IP address packets should be forwarded to. Next hop values are only allowed in routes where the next hop type is VirtualAppliance."
       }

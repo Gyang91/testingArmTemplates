@@ -38,13 +38,6 @@
                 "description": "country code"
             }
         },
-        "routeTableId": {
-            "type": "string",
-            "defaultValue": "0000",
-            "metadata": {
-                "description": "Resource Id of the route table"
-            }
-        },
          "rtDeployment": {
             "type": "bool",
             "defaultValue": true,

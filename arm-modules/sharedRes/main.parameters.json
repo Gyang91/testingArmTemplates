@@ -15,10 +15,16 @@
             "value": "10.249.20.0/23"
         },
         "rtDeployment": {
-            "value": false
+            "value": true
         },
         "publicIpOption": {
             "value": true
+        },
+        "nextHopType": {
+            "value": "VirtualAppliance"
+        },
+        "nextHopIpAdress": {
+            "value": "10.248.51.4"
         }
     }
 }
