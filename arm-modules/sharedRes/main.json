@@ -108,7 +108,7 @@
         "description": "Location for all resources."
       }
     },
-      "nextHopType": {
+    "nextHopType": {
       "type": "string",
       "defaultValue": "VirtualAppliance",
       "allowedValues": [
@@ -123,7 +123,7 @@
     },
     "nextHopIpAdress": {
       "type": "string",
-      "defaultValue" : "10.248.51.4",
+      "defaultValue": "10.248.51.4",
       "metadata": {
         "description": "The IP address packets should be forwarded to. Next hop values are only allowed in routes where the next hop type is VirtualAppliance."
       }
@@ -142,8 +142,8 @@
     "vnetName": "[concat(parameters('dataProduct'),'-','sh','-vnet')]",
     "snetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-snet')]",
     "subnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('snetName'))]",
-     "subnetCidrPositionLogic": "[string(add(int(substring(parameters('vnetAddressPrefix'),add(add(indexOf(parameters('vnetAddressPrefix'),'.'),1),add(indexOf(parameters('vnetAddressPrefix'),'.'),2)),sub(length(parameters('vnetAddressPrefix')),add(indexOf(parameters('vnetAddressPrefix'),'/'),1)))),2))]",
-        "subnetPrefix": "[if(equals(parameters('environment'),'dt'),replace(parameters('vnetAddressPrefix'),'/23','/24'),concat('10.249.',variables('subnetCidrPositionLogic'),'.0/24'))]",
+    "subnetCidrPositionLogic": "[string(add(int(substring(parameters('vnetAddressPrefix'),add(add(indexOf(parameters('vnetAddressPrefix'),'.'),1),add(indexOf(parameters('vnetAddressPrefix'),'.'),2)),sub(length(parameters('vnetAddressPrefix')),add(indexOf(parameters('vnetAddressPrefix'),'/'),1)))),2))]",
+    "subnetPrefix": "[if(equals(parameters('environment'),'dt'),replace(parameters('vnetAddressPrefix'),'/23','/24'),concat('10.249.',variables('subnetCidrPositionLogic'),'.0/24'))]",
     "storageAccountName": "[toLower(concat(parameters('countryCode'),'bootdiag',parameters('dataProduct'),parameters('environment'),'sacc'))]",
     "networkRuleSetBehindVNet": {
       "defaultAction": "deny",
@@ -206,7 +206,7 @@
       },
       "dependsOn": []
     },
-     {
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
       "name": "lkTemplRt",
@@ -226,7 +226,7 @@
           "resourceTags": {
             "value": "[parameters('resourceTags')]"
           },
-           "nextHopIpAdress": {
+          "nextHopIpAdress": {
             "value": "[parameters('nextHopIpAdress')]"
           },
           "nextHopType": {
