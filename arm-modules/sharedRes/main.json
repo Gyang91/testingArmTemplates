@@ -158,7 +158,15 @@
     "networkRuleSetDefault": {
       "defaultAction": "Allow",
       "bypass": "AzureServices"
-    }
+    },
+    "serviceEndpointsAll": [
+      {
+        "service": "Microsoft.Storage"
+      },
+      {
+        "service": "Microsoft.KeyVault"
+      }
+    ]
   },
   "resources": [
     {
@@ -403,7 +411,11 @@
         "addressPrefix": "[variables('subnetPrefix')]",
         "routeTable": {
           "id": "[reference('lkTemplRt').outputs.routeTableId.value]"
-        }
+        },
+        "networkSecurityGroup": {
+          "id": "[reference('lkTemplNetwork').outputs.nsgId.value]"
+        },
+        "serviceEndpoints": "[variables('serviceEndpointsAll')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'lkTemplRt')]"
