@@ -54,15 +54,7 @@
             {
                 "service": "Microsoft.KeyVault"
             }
-        ],
-        "onlyNsg": {
-            "addressPrefix": "[variables('subnetPrefix')]",
-            "networkSecurityGroup": {
-                "id": "[variables('nsgId')]"
-            },
-            "serviceEndpoints": "[variables('serviceEndpointsAll')]"
-        }
-
+        ]
     },
     "resources": [
         {
@@ -104,7 +96,13 @@
                 "subnets": [
                     {
                         "name": "[variables('snetName')]",
-                        "properties": "[variables('onlyNsg')]"
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[variables('nsgId')]"
+                            },
+                            "serviceEndpoints": "[variables('serviceEndpointsAll')]"
+                        }
                     }
                 ]
             },
