@@ -123,6 +123,7 @@
     },
     "nextHopIpAdress": {
       "type": "string",
+      "defaultValue" : "0.0.0.0",
       "metadata": {
         "description": "The IP address packets should be forwarded to. Next hop values are only allowed in routes where the next hop type is VirtualAppliance."
       }
@@ -391,7 +392,7 @@
             "value": "[concat(parameters('countryCode'),'-sh-',parameters('dataProduct'),parameters('environment'),'-',copyIndex(),'-vm')]"
           },
           "scriptUrl": {
-            "value": "https://raw.githubusercontent.com/gepirvu/armtemplates/main/arm-modules/sharedRes/irInstall/irInstall.ps1"
+            "value": "https://raw.githubusercontent.com/Gyang91/testingArmTemplates/main/arm-modules/sharedRes/irInstall/irInstall.ps1"
             //Uncomment below if deployment is from public available Azure Storage
             //"value": "[uri(deployment().properties.templateLink.uri, 'irInstall/irInstall.ps1')]"
           }

@@ -6,7 +6,7 @@
             "value": "test"
         },
         "environment": {
-            "value": "d"
+            "value": "dt"
         },
         "dataProductSize": {
             "value": "s"
@@ -20,4 +20,5 @@
         "publicIpOption": {
             "value": true
         }
+    }
 }
