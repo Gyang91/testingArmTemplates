@@ -185,36 +185,6 @@
       ]
     },
     {
-      "condition": "[parameters('rtDeployment')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2021-04-01",
-      "name": "lkTemplRt",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(deployment().properties.templateLink.uri, 'rt/azuredeploy.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "dataProduct": {
-            "value": "[parameters('dataProduct')]"
-          },
-          "environment": {
-            "value": "[parameters('environment')]"
-          },
-          "resourceTags": {
-            "value": "[parameters('resourceTags')]"
-          },
-          "nextHopIpAdress": {
-            "value": "[parameters('nextHopIpAdress')]"
-          },
-          "nextHopType": {
-            "value": "[parameters('nextHopType')]"
-          }
-        }
-      }
-    },
-    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
       "name": "lkTemplNetwork",
@@ -237,14 +207,18 @@
           "resourceTags": {
             "value": "[parameters('resourceTags')]"
           },
-          "routeTableId": {
-            "value": "[if(parameters('rtDeployment'), json(concat('{\"id\": \"', reference('lkTemplRt').outputs.routeTableId.value, '\"}')), json('null'))]"
+          "rtDeployment": {
+              "value": "[parameters('rtDeployment')]"
+          },
+           "nextHopIpAdress": {
+            "value": "[parameters('nextHopIpAdress')]"
+          },
+          "nextHopType": {
+            "value": "[parameters('nextHopType')]"
           }
         }
       },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'lkTemplRt')]"
-      ]
+      "dependsOn": []
     },
     {
       "type": "Microsoft.Resources/deployments",
