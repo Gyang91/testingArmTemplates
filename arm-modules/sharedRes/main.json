@@ -238,7 +238,7 @@
             "value": "[parameters('resourceTags')]"
           },
           "routeTableId": {
-            "value": "[if(parameters('rtDeployment'),reference('lkTemplRt').outputs.routeTableId.value,json('null'))]"
+            "value": "[if(parameters('rtDeployment'), json(concat('{\"id\": \"', reference('lkTemplRt').outputs.routeTableId.value, '\"}')), json('null'))]"
           }
         }
       },
