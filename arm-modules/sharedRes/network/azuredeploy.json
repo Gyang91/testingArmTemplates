@@ -37,32 +37,6 @@
             "metadata": {
                 "description": "country code"
             }
-        },
-         "rtDeployment": {
-            "type": "bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Decides to deploy or not to deploy a route table"
-            }
-        },
-            "nextHopType": {
-            "type": "string",
-            "defaultValue": "VirtualAppliance",
-            "allowedValues": [
-                "VirtualNetworkGateway",
-                "VnetLocal",
-                "Internet",
-                "VirtualAppliance"
-            ],
-            "metadata": {
-                "description": "The type of Azure hop the packet should be sent to"
-            }
-        },
-        "nextHopIpAdress": {
-            "type": "string",
-            "metadata": {
-                "description": "The IP address packets should be forwarded to. Next hop values are only allowed in routes where the next hop type is VirtualAppliance."
-            }
         }
     },
     "functions": [],
@@ -73,7 +47,6 @@
         "subnetPrefix": "[if(equals(parameters('environment'),'dt'),replace(parameters('addressPrefix'),'/23','/24'),concat('10.249.',variables('subnetCidrPositionLogic'),'.0/24'))]",
         "vnetName": "[concat(parameters('dataProduct'),'-sh-','vnet')]",
         "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-        "rtId": "[resourceId('Microsoft.Network/routeTables',variables('routeTableName'))]",
         "routeTableName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-rt')]",
         "serviceEndpointsAll": [
             {
@@ -89,41 +62,10 @@
                 "id": "[variables('nsgId')]"
             },
             "serviceEndpoints": "[variables('serviceEndpointsAll')]"
-        },
-        "withRt": {
-            "addressPrefix": "[variables('subnetPrefix')]",
-            "networkSecurityGroup": {
-                "id": "[variables('nsgId')]"
-            },
-            "routeTable": {
-                "id": "[variables('rtId')]"
-            },
-            "serviceEndpoints": "[variables('serviceEndpointsAll')]"
         }
 
     },
     "resources": [
-          {
-            "condition": "[parameters('rtDeployment')]",
-            "name": "[variables('routeTableName')]",
-            "type": "Microsoft.Network/routeTables",
-            "apiVersion": "2020-11-01",
-            "location": "[parameters('location')]",
-            "tags": "[parameters('resourceTags')]",
-            "properties": {
-                "routes": [
-                    {
-                        "name": "default",
-                        "properties": {
-                            "addressPrefix": "0.0.0.0/0",
-                            "nextHopType": "[parameters('nextHopType')]",
-                            "nextHopIpAddress": "[if(equals(parameters('nextHopType'),'VirtualAppliance'),parameters('nextHopIpAdress'),json('null'))]"
-                        }
-                    }
-                ],
-                "disableBgpRoutePropagation": true
-            }
-        },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2019-09-01",
@@ -163,7 +105,7 @@
                 "subnets": [
                     {
                         "name": "[variables('snetName')]",
-                        "properties": "[if(parameters('rtDeployment'), variables('withRt'), variables('onlyNsg'))]"
+                        "properties": "[variables('onlyNsg')]"
                     }
                 ]
             },
