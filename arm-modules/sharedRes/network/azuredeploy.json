@@ -111,5 +111,10 @@
             ]
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "nsgId": {
+            "type": "string",
+            "value": "[variables('nsgId')]"
+        }
+    }
 }
