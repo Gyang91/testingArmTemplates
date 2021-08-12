@@ -1,0 +1,337 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case name"
+            }
+        },
+        "environment": {
+            "type": "string",
+            "defaultValue": "devtest",
+            "metadata": {
+                "description": "Location for all services"
+            }
+        },
+        "resourceTags": {
+            "type": "object"
+        },
+        "containers": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "name": "MyContainer1",
+                    "partitionKey": "/partitionKey1"
+                },
+                {
+                    "name": "MyContainer2",
+                    "partitionKey": "/partitionKey2"
+                }
+            ],
+            "metadata": {
+                "description": "cosmos db container Name"
+            }
+        },
+        "autoscaleMaxThroughput": {
+            "type": "int",
+            "defaultValue": 4000,
+            "maxValue": 1000000,
+            "minValue": 4000,
+            "metadata": {
+                "description": "Maximum throughput for the container"
+            }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
+        },
+        "vnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.0.0/16",
+            "metadata": {
+                "description": "Vnet CIDR"
+            }
+        },
+        "privateSubnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.1.0/24",
+            "metadata": {
+                "description": "CIDR range for the private subnet."
+            }
+        },
+        "publicSubnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.2.0/24",
+            "metadata": {
+                "description": "CIDR range for the public subnet."
+            }
+        },
+        "computeSubnetCidr": {
+            "type": "string",
+            "defaultValue": "10.179.3.0/24",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    },
+    "variables": {
+        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
+        "databaseName": "[toLower(concat(parameters('dataProduct'),parameters('environment'),'db'))]",
+        "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
+        "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
+        "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
+        "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "computeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]",
+        "adbFeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbFeSnetName'))]",
+        "adbBeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbBeSnetName'))]",
+        "networkSecurityGroupName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-dbr-',parameters('environment'),'-nsg'))]",
+        "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('networkSecurityGroupName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "type": "Microsoft.Resources/deployments",
+            "name": "updateVirtualNetwork",
+            "resourceGroup": "cs-dp-av03drone-d-rg",
+            "properties": {
+                "mode": "Incremental",
+                "parameters": {},
+                "template": {
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2019-04-01",
+                            "name": "[variables('vnetName')]",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "location": "[parameters('location')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('vnetCidr')]"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "type": "Microsoft.Network/virtualNetworks/subnets",
+                                        "name": "[variables('adbBeSnetName')]",
+                                        "id": "[variables('adbBeSubnet')]",
+                                        "properties": {
+                                            "addressPrefix": "10.179.1.0/24",
+                                            "networkSecurityGroup": {
+                                                "id": "[variables('nsgId')]"
+                                            },
+                                            "serviceEndpoints": [
+                                                {
+                                                    "service": "Microsoft.Storage"
+                                                },
+                                                {
+                                                    "service": "Microsoft.KeyVault"
+                                                },
+                                                {
+                                                    "service": "Microsoft.ContainerRegistry"
+                                                },
+                                                {
+                                                    "service": "Microsoft.Sql"
+                                                },
+                                                {
+                                                    "service": "Microsoft.AzureCosmosDB"
+                                                }
+                                            ],
+                                            "delegations": [
+                                                {
+                                                    "name": "databricks-del-private",
+                                                    "properties": {
+                                                        "serviceName": "Microsoft.Databricks/workspaces"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "Microsoft.Network/virtualNetworks/subnets",
+                                        "name": "[variables('computeSnetName')]",
+                                        "id": "[variables('computeSubnet')]",
+                                        "properties": {
+                                            "addressPrefix": "[parameters('computeSubnetCidr')]",
+                                            "networkSecurityGroup": {
+                                                "id": "[variables('nsgId')]"
+                                            },
+                                            "serviceEndpoints": [
+                                                {
+                                                    "service": "Microsoft.Storage"
+                                                },
+                                                {
+                                                    "service": "Microsoft.KeyVault"
+                                                },
+                                                {
+                                                    "service": "Microsoft.ContainerRegistry"
+                                                },
+                                                {
+                                                    "service": "Microsoft.Sql"
+                                                },
+                                                {
+                                                    "service": "Microsoft.AzureCosmosDB"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "Microsoft.Network/virtualNetworks/subnets",
+                                        "name": "[variables('adbFeSnetName')]",
+                                        "id": "[variables('adbFeSubnet')]",
+                                        "properties": {
+                                            "provisioningState": "Succeeded",
+                                            "addressPrefix": "10.179.2.0/24",
+                                            "networkSecurityGroup": {
+                                                "id": "[variables('nsgId')]"
+                                            },
+                                            "serviceEndpoints": [
+                                                {
+                                                    "service": "Microsoft.Storage"
+                                                },
+                                                {
+                                                    "service": "Microsoft.KeyVault"
+                                                },
+                                                {
+                                                    "service": "Microsoft.ContainerRegistry"
+                                                },
+                                                {
+                                                    "service": "Microsoft.Sql"
+                                                },
+                                                {
+                                                    "service": "Microsoft.AzureCosmosDB"
+                                                }
+                                            ],
+                                            "delegations": [
+                                                {
+                                                    "name": "databricks-del-private",
+                                                    "properties": {
+                                                        "serviceName": "Microsoft.Databricks/workspaces"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[variables('cosmosDbAccountName')]",
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "apiVersion": "2021-05-15",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "kind": "GlobalDocumentDB",
+            "properties": {
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "Eventual",
+                    "maxStalenessPrefix": 1,
+                    "maxIntervalInSeconds": 5
+                },
+                "locations": [
+                    {
+                        "locationName": "[parameters('location')]",
+                        "failoverPriority": 0
+                    }
+                ],
+                "databaseAccountOfferType": "Standard",
+                "enableAutomaticFailover": false,
+                "isVirtualNetworkFilterEnabled": true,
+                "virtualNetworkRules": [
+                    {
+                        "id": "[variables('adbFeSubnet')]"
+                    },
+                    {
+                        "id": "[variables('adbBeSubnet')]"
+                    },
+                    {
+                        "id": "[variables('computeSubnet')]"
+                    }
+                ],
+                "ipRules": [
+                    {
+                        "ipAddressOrRange": "104.42.195.92"
+                    },
+                    {
+                        "ipAddressOrRange": "40.76.54.131"
+                    },
+                    {
+                        "ipAddressOrRange": "52.176.6.30"
+                    },
+                    {
+                        "ipAddressOrRange": "52.169.50.45"
+                    },
+                    {
+                        "ipAddressOrRange": "52.187.184.26"
+                    }
+                ],
+                "enableMultipleWriteLocations": true,
+                "enableFreeTier": false
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases",
+            "name": "[concat( variables('cosmosDbAccountName'), '/sql/', variables('databaseName'))]",
+            "apiVersion": "2016-03-31",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
+            ],
+            "properties": {
+                "resource": {
+                    "id": "[variables('databaseName')]"
+                },
+                "options": {
+                    "throughput": 400
+                }
+            }
+        },
+        {
+            "type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
+            "name": "[concat(variables('cosmosDbAccountName'), '/sql/', variables('databaseName'), '/', parameters('containers')[copyIndex()].name)]",
+            "copy": {
+                "name": "ContainerCopy",
+                "count": "[length(parameters('containers'))]"
+            },
+            "apiVersion": "2016-03-31",
+            "properties": {
+                "resource": {
+                    "id": "[parameters('containers')[copyIndex()].name]",
+                    "partitionKey": {
+                        "paths": [ "[parameters('containers')[copyIndex()].partitionKey]" ],
+                        "kind": "hash"
+                    },
+                    "indexingPolicy": {
+                        "indexingMode": "consistent"
+                    }
+                },
+                "options": {
+                    "autoscaleSettings": {
+                        "maxThroughput": "[parameters('autoscaleMaxThroughput')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('cosmosDbAccountName'), 'sql', variables('databaseName'))]"
+            ]
+        }
+    ]
+}
