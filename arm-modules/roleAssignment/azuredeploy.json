@@ -62,6 +62,13 @@
             "metadata": {
                 "description": "country code"
             }
+        },
+         "cosmoDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Cosmos Db"
+            }
         }
     },
     "variables": {
@@ -70,8 +77,10 @@
         "Reader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
         "StorageBlobDataContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "StorageBlobDataReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
+        "DocumentDbAccountContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '5bd9cd88-fe45-4216-938b-f97437e15450')]",
         "adbWorkSpaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-dbr'))]",
-        "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]"
+        "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]",
+        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]"
     },
     "resources": [
         {

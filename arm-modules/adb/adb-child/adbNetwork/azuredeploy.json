@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-          "environment": {
+        "environment": {
             "type": "string",
             "defaultValue": "d",
             "metadata": {
@@ -22,7 +22,7 @@
                 "description": "Use Case name"
             }
         },
-          "vnetCidr": {
+        "vnetCidr": {
             "type": "string",
             "defaultValue": "10.179.0.0/16",
             "metadata": {
@@ -43,7 +43,7 @@
                 "description": "CIDR range for the public subnet."
             }
         },
-           "resourceTags": {
+        "resourceTags": {
             "type": "object"
         },
         "countryCode": {
@@ -57,24 +57,33 @@
     "functions": [],
     "variables": {
         "networkSecurityGroupName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-dbr-',parameters('environment'),'-nsg'))]",
-        "nsgId":"[resourceId('Microsoft.Network/networkSecurityGroups',variables('networkSecurityGroupName'))]",
+        "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('networkSecurityGroupName'))]",
         "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
         "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
         "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
         "serviceEndpointsAll": [
-        {
-          "service": "Microsoft.Storage"
-        },
-        {
-          "service": "Microsoft.KeyVault"
-        },
-        {
-          "service": "Microsoft.ContainerRegistry"
-        },
-        {
-          "service": "Microsoft.Sql"
-        }
-      ]
+            {
+                "service": "Microsoft.Storage"
+            },
+            {
+                "service": "Microsoft.KeyVault"
+            },
+            {
+                "service": "Microsoft.ContainerRegistry"
+            },
+            {
+                "service": "Microsoft.Sql"
+            },
+            {
+                "service": "Microsoft.AzureCosmosDB"
+            },
+            {
+                "service": "Microsoft.EventHub"
+            },
+            {
+                "service": "Microsoft.Web"
+            }
+        ]
     },
     "resources": [
         {
@@ -183,7 +192,7 @@
             "name": "[variables('vnetName')]",
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": ["[parameters('vnetCidr')]"]
+                    "addressPrefixes": [ "[parameters('vnetCidr')]" ]
                 },
                 "subnets": [
                     {

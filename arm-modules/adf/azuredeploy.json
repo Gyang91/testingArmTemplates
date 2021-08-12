@@ -50,12 +50,6 @@
                 "description": "Resource Id of the hub/shared Azure Data Factory"
             }
         },
-        "linkedServiceFlag": {
-            "type": "bool",
-            "metadata": {
-                "description": "Flag to activate or deactivate the resource for the Azure Data Factory - Linked Servicce"
-            }
-        },
         "linkedIRFlag": {
             "type": "bool",
             "metadata": {
@@ -82,13 +76,32 @@
             "metadata": {
                 "description": "country code"
             }
+        },
+         "cosmoDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Cosmos Db"
+            }
+        },
+         "functionDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Function App"
+            }
         }
     },
     "functions": [],
     "variables": {
         "dataFactoryName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-df'))]",
         "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]",
-        "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]"
+        "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]",
+        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
+        "cosmosEndpoint": "[concat('https://',variables('cosmosDbAccountName'),'.document.azure.com:443/')]",
+        "cosmosDatabaseName": "[toLower(concat(parameters('dataProduct'),parameters('environment'),'db'))]",
+        "azureFunctionName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa'))]",
+        "functionAppUrl": "[concat('https://',variables('azureFunctionName'),'.azurewebsites.net')]"
     },
     "resources": [
         {
@@ -122,7 +135,7 @@
                     ]
                 },
                 {
-                    "condition": "[parameters('linkedServiceFlag')]",
+                    
                     "type": "linkedservices",
                     "apiVersion": "2018-06-01",
                     "name": "arm_ls_dls",
@@ -138,7 +151,7 @@
                     ]
                 },
                 {
-                    "condition": "[parameters('linkedServiceFlag')]",
+                    
                     "type": "linkedservices",
                     "apiVersion": "2018-06-01",
                     "name": "arm_ls_kv",
@@ -154,7 +167,7 @@
                     ]
                 },
                 {
-                    "condition": "[parameters('linkedServiceFlag')]",
+                    
                     "type": "linkedservices",
                     "apiVersion": "2018-06-01",
                     "name": "arm_ls_asql",
@@ -178,7 +191,7 @@
                     ]
                 },
                 {
-                "condition": "[parameters('linkedServiceFlag')]",
+                
                     "type": "linkedservices",
                     "apiVersion": "2018-06-01",
                     "name": "arm_ls_aml",
@@ -197,7 +210,7 @@
                     ]
                 },
                 {
-                "condition": "[parameters('linkedServiceFlag')]",
+                
                     "type": "linkedservices",
                     "apiVersion": "2018-06-01",
                     "name": "arm_ls_adb",
@@ -217,6 +230,48 @@
                             "newClusterInitScripts": []
                         },
                         "description": "[concat('Linked Service to the Azure Databricks in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                 {
+                "condition": "[parameters('cosmoDeployment')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_cosmo",
+                    "properties": {
+                        "type": "CosmosDb",
+                        "typeProperties": {
+                            "accountEndpoint": "[variables('cosmosEndpoint')]",
+                            "database":"[variables('cosmosDatabaseName')]"
+                        },
+                        "description": "[concat('Linked Service to the Cosmos Db SQL Api in the resource group ',resourceGroup().name)]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
+                    ]
+                },
+                 {
+                "condition": "[parameters('functionDeployment')]",
+                    "type": "linkedservices",
+                    "apiVersion": "2018-06-01",
+                    "name": "arm_ls_fa",
+                    "properties": {
+                        "type": "AzureFunction",
+                        "typeProperties": {
+                            "functionAppUrl": "[variables('functionAppUrl')]",
+                            "functionKey": {
+                                "type": "AzureKeyVaultSecret",
+                                "store": {
+                                    "referenceName": "arm_ls_kv",
+                                    "type": "LinkedServiceReference"
+                                },
+                                "secretName":"azureFuncKey"
+                            },
+                            "authentication": "MSI"
+                        },
+                        "description": "[concat('Linked Service to the Azure Function in the resource group ',resourceGroup().name)]"
                     },
                     "dependsOn": [
                         "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
