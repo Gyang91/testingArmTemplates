@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "testUri": {
+            "type": "string",
+            "defaultValue": "https://status.azure.com/en-us/status/",
+            "metadata": {
+                "description": "A test URI"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case name"
+            }
+        },
+        "environment": {
+            "type": "string",
+            "defaultValue": "d",
+            "metadata": {
+                "description": "Location for all services"
+            }
+        },
+        "resourceTags": {
+            "type": "object"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "logicAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-la')]",
+        "frequency": "Hour",
+        "interval": "1",
+        "type": "recurrence",
+        "actionType": "http",
+        "method": "GET",
+        "workflowSchema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[variables('logicAppName')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "definition": {
+                    "$schema": "[variables('workflowSchema')]",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "testUri": {
+                            "type": "string",
+                            "defaultValue": "[parameters('testUri')]"
+                        }
+                    },
+                    "triggers": {
+                        "recurrence": {
+                            "type": "[variables('type')]",
+                            "recurrence": {
+                                "frequency": "[variables('frequency')]",
+                                "interval": "[variables('interval')]"
+                            }
+                        }
+                    },
+                    "actions": {
+                        "actionType": {
+                            "type": "[variables('actionType')]",
+                            "inputs": {
+                                "method": "[variables('method')]",
+                                "uri": "[parameters('testUri')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -17,7 +17,7 @@
         },
         "environment": {
             "type": "string",
-            "defaultValue": "devtest",
+            "defaultValue": "d",
             "metadata": {
                 "description": "Location for all services"
             }

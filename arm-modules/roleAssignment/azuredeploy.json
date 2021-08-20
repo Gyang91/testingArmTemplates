@@ -25,6 +25,9 @@
                 },
                 {
                     "Id": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60" //Giang
+                },
+                {
+                    "Id": "7c595102-1d7e-493e-8c36-432344422d5b" // Service Principal cs-dte-avalon-sp
                 }
             ],
             "metadata": {
@@ -63,7 +66,7 @@
                 "description": "country code"
             }
         },
-         "cosmoDeployment": {
+        "cosmoDeployment": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
@@ -83,6 +86,32 @@
         "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]"
     },
     "resources": [
+        {
+            "condition": "[parameters('cosmoDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "adfRoleAssignmentToCosmos",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-04-01-preview",
+                            "name": "[guid(uniqueString(resourceGroup().id,variables('cosmosDbAccountName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
+                            "scope": "[concat('Microsoft.Storage/databaseAccounts', '/', variables('cosmosDbAccountName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('DocumentDbAccountContributor')]",
+                                "principalId": "[parameters('dataFactoryPrincipalId')]",
+                                "principalType": "ServicePrincipal" //https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template#new-service-principal
+                            }
+                        }
+                    ]
+                }
+            }
+        },
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
@@ -159,8 +188,3 @@
         }
     ]
 }
-
-
-
-
-

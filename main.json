@@ -88,7 +88,28 @@
             "type": "bool",
             "defaultValue": true,
             "metadata": {
-                "description": "Decides to deploy or not to deploy Cosmos Db"
+                "description": "Decides to deploy or not to deploy Azure Function"
+            }
+        },
+         "iotHubDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy IoT Hub Db"
+            }
+        },
+         "eventhubDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Event Hub"
+            }
+        },
+        "streamAnalyticsDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Streaming Analytics"
             }
         }
     },
