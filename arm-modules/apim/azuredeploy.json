@@ -4,7 +4,6 @@
     "parameters": {
         "publisherEmail": {
             "type": "string",
-            "defaultValue": "ngle@infomotion.de",
             "minLength": 1,
             "metadata": {
                 "description": "The email address of the owner of the service"
