@@ -111,6 +111,13 @@
             "metadata": {
                 "description": "Decides to deploy or not to deploy Streaming Analytics"
             }
+        },
+        "apiManagementDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy API Mangemenent Service"
+            }
         }
     },
     "functions": [],
@@ -240,6 +247,9 @@
                     },
                     "cosmoDeployment": {
                         "value": "[parameters('cosmoDeployment')]"
+                    },
+                    "functionDeployment": {
+                        "value": "[parameters('functionDeployment')]"
                     }
                 }
             },
@@ -247,7 +257,8 @@
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAdf')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplSyn')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAdb')]",
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplAml')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplAml')]",
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]"
             ]
         },
         {

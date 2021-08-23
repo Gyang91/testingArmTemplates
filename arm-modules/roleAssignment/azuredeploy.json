@@ -25,13 +25,17 @@
                 },
                 {
                     "Id": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60" //Giang
-                },
-                {
-                    "Id": "7c595102-1d7e-493e-8c36-432344422d5b" // Service Principal cs-dte-avalon-sp
                 }
             ],
             "metadata": {
                 "description": "User principals Objects with permissions."
+            }
+        },
+        "spObjectId": {
+            "type": "securestring",
+            "defaultValue": "7c595102-1d7e-493e-8c36-432344422d5b", // Service Principal cs-dte-avalon-sp
+            "metadata": {
+                "description": "Service principal Object Id"
             }
         },
         "synapseWorkspaceName": {
@@ -72,6 +76,13 @@
             "metadata": {
                 "description": "Decides to deploy or not to deploy Cosmos Db"
             }
+        },
+        "functionDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Azure Function"
+            }
         }
     },
     "variables": {
@@ -83,9 +94,36 @@
         "DocumentDbAccountContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '5bd9cd88-fe45-4216-938b-f97437e15450')]",
         "adbWorkSpaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-dbr'))]",
         "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]",
-        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]"
+        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
+        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
     },
     "resources": [
+        {
+            "condition": "[parameters('functionDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "adfRoleAssignmentToFunctionApp",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2020-04-01-preview",
+                            "name": "[guid(uniqueString(resourceGroup().id,variables('functionAppName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
+                            "scope": "[concat('Microsoft.Web/sites', '/', variables('functionAppName'))]",
+                            "properties": {
+                                "roleDefinitionId": "[variables('Contributor')]",
+                                "principalId": "[parameters('dataFactoryPrincipalId')]",
+                                "principalType": "ServicePrincipal" //https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template#new-service-principal
+                            }
+                        }
+                    ]
+                }
+            }
+        },
         {
             "condition": "[parameters('cosmoDeployment')]",
             "type": "Microsoft.Resources/deployments",
@@ -158,6 +196,28 @@
                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
                 "principalId": "[parameters('userObjectId')[copyIndex('assignment')].Id]",
                 "principalType": "User"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('spObjectId')))]",
+            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
+            "properties": {
+                "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
+                "principalId": "[parameters('spObjectId')]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('spObjectId')))]",
+            "scope": "[concat('Microsoft.Databricks/workspaces/', variables('adbWorkSpaceName'))]",
+            "properties": {
+                "roleDefinitionId": "[variables('Contributor')]",
+                "principalId": "[parameters('spObjectId')]",
+                "principalType": "ServicePrincipal"
             }
         },
         {

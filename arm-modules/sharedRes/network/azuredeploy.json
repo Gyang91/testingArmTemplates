@@ -66,16 +66,16 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "default-allow-rdp",
+                        "name": "Dependency_on_SQL",
                         "properties": {
-                            "priority": 1000,
-                            "sourceAddressPrefix": "*",
                             "protocol": "Tcp",
-                            "destinationPortRange": "3389",
-                            "access": "Allow",
-                            "direction": "Inbound",
                             "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*"
+                            "destinationPortRange": "1433",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Outbound"
                         }
                     }
                 ]

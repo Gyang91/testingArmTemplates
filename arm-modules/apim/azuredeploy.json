@@ -1,0 +1,108 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "publisherEmail": {
+            "type": "string",
+            "defaultValue": "ngle@infomotion.de",
+            "minLength": 1,
+            "metadata": {
+                "description": "The email address of the owner of the service"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "dataProduct": {
+            "type": "string",
+            "metadata": {
+                "description": "Use Case name"
+            }
+        },
+        "environment": {
+            "type": "string",
+            "defaultValue": "d",
+            "metadata": {
+                "description": "Location for all services"
+            }
+        },
+        "dataProductSize": {
+            "type": "string",
+            "defaultValue": "s",
+            "allowedValues": [
+                "s",
+                "m",
+                "l"
+            ],
+            "metadata": {
+                "description": "Tshirt size for the data product"
+            }
+        },
+        "resourceTags": {
+            "type": "object"
+        },
+        "apipmManagedIdentityOption": {
+            "type": "string",
+            "defaultValue": "None",
+            "allowedValues": [
+                "SystemAssigned",
+                "UserAssigned",
+                "None",
+                "SystemAssigned, UserAssigned"
+            ],
+            "metadata": {
+                "description": "Determine to set a managed identity or not"
+            }
+        }
+    },
+    "variables": {
+        "apimScale": {
+            "s": {
+                "apimSku": "Developer",
+                "apimSkuCount": "1"
+            },
+            "m": {
+                "apimSku": "Developer",
+                "apimSkuCount": "1"
+            },
+            "l": {
+                "apimSku": "Standard",
+                "apimSkuCount": "2"
+            }
+        },
+        "apimSkuName": "[variables('apimScale')[parameters('dataProductSize')].apimSku]",
+        "apimSkuCapacity": "[variables('apimScale')[parameters('dataProductSize')].apimSkuCount]",
+        "apiManagementServiceName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-apim')]",
+           "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
+    "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+     "computeSubnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2021-01-01-preview",
+            "name": "[variables('apiManagementServiceName')]",
+            "tags": "[parameters('resourceTags')]",
+            "location": "[parameters('location')]",
+            "identity": {
+                "type": "[parameters('apipmManagedIdentityOption')]"
+            },
+            "sku": {
+                "name": "[variables('apimSkuName')]",
+                "capacity": "[variables('apimSkuCapacity')]"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('publisherEmail')]",
+                "publisherName": "[variables('apiManagementServiceName')]",
+                "virtualNetworkType": "Internal",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[variables('computeSubnet')]"
+                }
+            }
+        }
+    ]
+}
