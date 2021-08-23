@@ -84,21 +84,21 @@
                 "description": "Determines whether or not to put the azure sql server behind VNet"
             }
         },
-         "functionDeployment": {
+        "functionDeployment": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
                 "description": "Decides to deploy or not to deploy Azure Function"
             }
         },
-         "iotHubDeployment": {
+        "iotHubDeployment": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
                 "description": "Decides to deploy or not to deploy IoT Hub Db"
             }
         },
-         "eventhubDeployment": {
+        "eventhubDeployment": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
@@ -118,11 +118,244 @@
             "metadata": {
                 "description": "Decides to deploy or not to deploy API Mangemenent Service"
             }
+        },
+        "logicAppDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Decides to deploy or not to deploy Logic App"
+            }
+        },
+        "apiManagementPublisherEmail": {
+            "type": "string",
+            "defaultValue": "ngle@infomotion.de",
+            "metadata": {
+                "description": "The email address of the owner of the service"
+            }
         }
     },
     "functions": [],
     "variables": {},
     "resources": [
+        {
+            "condition": "[parameters('cosmoDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplCdb",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/cdb/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    }
+
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('logicAppDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplLa",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/la/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('iotHubDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplIoth",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/ioth/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    },
+                    "dataProductSize": {
+                        "value": "[parameters('dataProductSize')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('eventhubDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplEh",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/eh/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    },
+                    "dataProductSize": {
+                        "value": "[parameters('dataProductSize')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('streamAnalyticsDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplSaj",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/saj/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    },
+                    "dataProductSize": {
+                        "value": "[parameters('dataProductSize')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('apiManagementDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplApim",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/apim/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    },
+                    "dataProductSize": {
+                        "value": "[parameters('dataProductSize')]"
+                    },
+                    "publisherEmail": {
+                        "value": "[parameters('apiManagementPublisherEmail')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition": "[parameters('functionDeployment')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "lkTemplFa",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/fa/azuredeploy.json')]",
+                    //"relativePath":"./arm-modules/adf/azuredeploy.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "environment": {
+                        "value": "[parameters('environment')]"
+                    },
+                    "dataProduct": {
+                        "value": "[parameters('dataProduct')]"
+                    },
+                    "resourceTags": {
+                        "value": "[parameters('resourceTags')]"
+                    },
+                    "countryCode": {
+                        "value": "[parameters('countryCode')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",

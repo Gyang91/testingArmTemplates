@@ -57,7 +57,7 @@
                 "streamingUnits": 5
             }
         },
-        "streamingUnits": "[variables('sajScale')[parameters('dataProductSize')].name]",
+        "streamingUnits": "[variables('sajScale')[parameters('dataProductSize')].streamingUnits]",
         "streamingJobName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-saj')]"
     },
     "resources": [
