@@ -13,7 +13,27 @@
         },
         "adbDeployment": {
             "value": true
+        },
+        "apiManagementDeployment": {
+            "value": true
+        },
+        "cosmoDeployment": {
+            "value": true
+        },
+        "eventhubDeployment": {
+            "value": true
+        },
+        "functionDeployment": {
+            "value": true
+        },
+        "iotHubDeployment": {
+            "value": true
+        },
+        "logicAppDeployment": {
+            "value": true
+        },
+        "streamAnalyticsDeployment": {
+            "value": true
         }
-
     }
 }
