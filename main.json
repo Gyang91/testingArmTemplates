@@ -403,7 +403,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAdb')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAsql')]",
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]",
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplCdb')]"
             ]
         },
         {
@@ -491,7 +492,8 @@
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplSyn')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAdb')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAml')]",
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]",
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplCdb')]"
             ]
         },
         {
