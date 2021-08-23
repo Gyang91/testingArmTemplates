@@ -206,7 +206,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplVnet')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplSnet')]"
             ]
         },
         {
@@ -291,7 +291,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplVnet')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplSnet')]"
             ]
         },
         {
@@ -383,11 +383,11 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "lkTemplVnet",
+            "name": "lkTemplSnet",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/vnet/azuredeploy.json')]",
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'arm-modules/snet/azuredeploy.json')]",
                     //"relativePath":"./arm-modules/asql/azuredeploy.json",
                     "contentVersion": "1.0.0.0"
                 },

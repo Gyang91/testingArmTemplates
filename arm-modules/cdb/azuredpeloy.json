@@ -62,10 +62,17 @@
             "metadata": {
                 "description": "Determines whether or not to activate the managed identity of the cosmos db."
             }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
-        "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
+        "cosmosDbAccountName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
         "cosmosDatabaseName": "[toLower(concat(parameters('dataProduct'),parameters('environment'),'db'))]",
         "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
         "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",

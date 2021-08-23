@@ -57,6 +57,13 @@
             "metadata": {
                 "description": "Determine to set a managed identity or not"
             }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
@@ -76,10 +83,7 @@
         },
         "apimSkuName": "[variables('apimScale')[parameters('dataProductSize')].apimSku]",
         "apimSkuCapacity": "[variables('apimScale')[parameters('dataProductSize')].apimSkuCount]",
-        "apiManagementServiceName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-apim')]",
-           "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
-    "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
-     "computeSubnet": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]"
+        "apiManagementServiceName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-apim')]"
     },
     "resources": [
         {
@@ -97,11 +101,7 @@
             },
             "properties": {
                 "publisherEmail": "[parameters('publisherEmail')]",
-                "publisherName": "[variables('apiManagementServiceName')]",
-                "virtualNetworkType": "Internal",
-                "virtualNetworkConfiguration": {
-                    "subnetResourceId": "[variables('computeSubnet')]"
-                }
+                "publisherName": "[variables('apiManagementServiceName')]"
             }
         }
     ]

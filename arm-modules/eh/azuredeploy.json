@@ -36,6 +36,13 @@
             "metadata": {
                 "description": "Tshirt size for the data product"
             }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
@@ -67,7 +74,7 @@
         "eventhubSkuCapacity": "[variables('eventhubScale')[parameters('dataProductSize')].capacity]",
         "eventhubAutoInflate": "[variables('eventhubScale')[parameters('dataProductSize')].isAutoInflateEnabled]",
         "eventhubmaxThroughPutUnit": "[variables('eventhubScale')[parameters('dataProductSize')].maximumThroughputUnits]",
-        "eventHubName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-eh')]",
+        "eventHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-eh')]",
         "eventHubNamespaceName": "[concat(variables('eventHubName'), '-ns')]"
     },
     "resources": [

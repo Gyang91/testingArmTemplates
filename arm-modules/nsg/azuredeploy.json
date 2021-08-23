@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-         "environment": {
+        "environment": {
             "type": "string",
             "defaultValue": "d",
             "metadata": {
@@ -25,7 +25,7 @@
         "resourceTags": {
             "type": "object"
         },
-                "countryCode": {
+        "countryCode": {
             "type": "string",
             "defaultValue": "cs",
             "metadata": {
@@ -36,7 +36,7 @@
     "functions": [],
     "variables": {
         "adbNetworkSecurityGroupName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-adb-',parameters('environment'),'-nsg'))]",
-        "nsgAdbId":"[resourceId('Microsoft.Network/networkSecurityGroups',variables('adbNetworkSecurityGroupName'))]"
+        "nsgAdbId": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('adbNetworkSecurityGroupName'))]"
     },
     "resources": [
         {

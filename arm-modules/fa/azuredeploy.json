@@ -56,15 +56,22 @@
         },
         "resourceTags": {
             "type": "object"
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
-        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
+        "functionAppName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
         "hostingPlanName": "[variables('functionAppName')]",
-        "applicationInsightsName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-ai'))]",
-        "storageAccountName": "[concat('cs',parameters('dataProduct'),parameters('environment'),'fa','sacc')]",
+        "applicationInsightsName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ai'))]",
+        "storageAccountName": "[concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'fa','sacc')]",
         "functionWorkerRuntime": "[parameters('runtime')]",
-        "keyVaultName": "[toLower(concat('cs','-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]"
+        "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]"
     },
     "resources": [
         {

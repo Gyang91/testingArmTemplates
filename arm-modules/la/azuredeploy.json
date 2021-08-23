@@ -31,11 +31,18 @@
         },
         "resourceTags": {
             "type": "object"
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "functions": [],
     "variables": {
-        "logicAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-la')]",
+        "logicAppName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-la')]",
         "frequency": "Hour",
         "interval": "1",
         "type": "recurrence",

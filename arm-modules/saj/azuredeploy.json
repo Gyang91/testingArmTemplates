@@ -36,6 +36,13 @@
             "metadata": {
                 "description": "Tshirt size for the data product"
             }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
@@ -51,7 +58,7 @@
             }
         },
         "streamingUnits": "[variables('sajScale')[parameters('dataProductSize')].name]",
-        "streamingJobName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-saj')]"
+        "streamingJobName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-saj')]"
     },
     "resources": [
         {

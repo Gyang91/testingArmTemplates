@@ -35,7 +35,7 @@
             "defaultValue": 2,
             "minValue": 2
         },
-          "dataProductSize": {
+        "dataProductSize": {
             "type": "string",
             "defaultValue": "s",
             "allowedValues": [
@@ -46,10 +46,17 @@
             "metadata": {
                 "description": "Tshirt size for the data product"
             }
+        },
+        "countryCode": {
+            "type": "string",
+            "defaultValue": "cs",
+            "metadata": {
+                "description": "country code"
+            }
         }
     },
     "variables": {
-         "iothubScale": {
+        "iothubScale": {
             "s": {
                 "name": "B1",
                 "capacity": 1
@@ -65,7 +72,7 @@
         },
         "iothubSkuName": "[variables('iothubScale')[parameters('dataProductSize')].name]",
         "iothubSkuCapacity": "[variables('iothubScale')[parameters('dataProductSize')].capacity]",
-        "iotHubName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-ioth')]"
+        "iotHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ioth')]"
     },
     "resources": [
         {
