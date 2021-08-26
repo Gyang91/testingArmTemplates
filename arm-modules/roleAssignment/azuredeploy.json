@@ -96,8 +96,7 @@
         "adbWorkSpaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-dbr'))]",
         "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]",
         "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
-        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
-        "dataFactoryName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-df'))]"
+        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]"
     },
     "resources": [
         {
@@ -155,7 +154,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "adfRoleAssignmentToDls", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('dataFactoryName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
             "scope": "[concat('Microsoft.Storage/storageAccounts', '/', parameters('storageName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
@@ -166,7 +165,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "adfRoleAssignmentToDbr", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
+            "name": "[guid(uniqueString(resourceGroup().id,variables('adbWorkspaceName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
             "scope": "[concat('Microsoft.Databricks/workspaces', '/', variables('adbWorkspaceName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('Contributor')]",
@@ -177,7 +176,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "synRoleAssignmentToDls",
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('synapseWorkspaceName')))]",
             "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
@@ -203,7 +202,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "servicePrincipalRoleAssignmentToDls",
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('spObjectId')))]",
             "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
@@ -214,7 +213,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "servicePrincipalRoleAssignmentToDbr",
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('spObjectId'),variables('adbWorkSpaceName')))]",
             "scope": "[concat('Microsoft.Databricks/workspaces/', variables('adbWorkSpaceName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('Contributor')]",
@@ -240,7 +239,7 @@
         {
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
-            "name": "adfRoleAssignmentToAml",
+            "name": "[guid(uniqueString(resourceGroup().id,variables('machineLearningWorkspaceName')))]",
             "scope": "[concat('Microsoft.MachineLearningServices/workspaces/', variables('machineLearningWorkspaceName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('Contributor')]",
