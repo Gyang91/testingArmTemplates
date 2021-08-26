@@ -585,7 +585,7 @@
                         "value": "[parameters('environment')]"
                     },
                     "sparkDeployment": {
-                        "value": true
+                        "value": false
                     },
                     "dlsDeployment": {
                         "value": false
