@@ -69,22 +69,11 @@
         "functionAppName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
         "hostingPlanName": "[variables('functionAppName')]",
         "applicationInsightsName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ai'))]",
-        "storageAccountName": "[concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'fa','sacc')]",
+        "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
         "functionWorkerRuntime": "[parameters('runtime')]",
         "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]"
     },
     "resources": [
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2021-04-01",
-            "name": "[variables('storageAccountName')]",
-            "tags": "[parameters('resourceTags')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "name": "[parameters('storageAccountType')]"
-            },
-            "kind": "Storage"
-        },
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2020-12-01",
