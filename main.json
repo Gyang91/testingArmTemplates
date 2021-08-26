@@ -253,7 +253,9 @@
                     }
                 }
             },
-            "dependsOn": []
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplKv')]"
+            ]
         },
         {
             "condition": "[parameters('eventhubDeployment')]",
