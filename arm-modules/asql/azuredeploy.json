@@ -185,7 +185,7 @@
           "name": "[concat(variables('keyVaultName'),'/','azureSqlCs')]",
           "location": "[parameters('location')]",
           "properties": {
-            "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+            "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlserverName')).administratorLogin,';Password=',variables('sqlserverAdminPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
           },
           "dependsOn": [
             "[resourceId('Microsoft.Sql/servers', variables('sqlserverName'))]"
