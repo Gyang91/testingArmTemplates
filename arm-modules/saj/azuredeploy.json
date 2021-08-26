@@ -125,7 +125,7 @@
                             "scope": "[concat('Microsoft.Devices/IotHubs', '/', variables('iotHubName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('IoTHubDataContributor')]",
-                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2021-03-01-preview', 'Full').identity.principalId]",
+                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2019-06-01', 'Full').identity.principalId]",
                                 "principalType": "ServicePrincipal" //https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template#new-service-principal
                             }
                         }
@@ -154,7 +154,7 @@
                             "scope": "[concat('Microsoft.EventHub/namespaces', '/', variables('eventHubNamespaceName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('AzureEventHubsDataOwner')]",
-                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2021-03-01-preview', 'Full').identity.principalId]",
+                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2019-06-01', 'Full').identity.principalId]",
                                 "principalType": "ServicePrincipal" //https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template#new-service-principal
                             }
                         }
@@ -182,7 +182,7 @@
                             "scope": "[concat('Microsoft.Storage/storageAccounts', '/', variables('storageAccountName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
-                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2021-03-01-preview', 'Full').identity.principalId]",
+                                "principalId": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2019-06-01', 'Full').identity.principalId]",
                                 "principalType": "ServicePrincipal" //https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-template#new-service-principal
                             }
                         }
@@ -197,7 +197,7 @@
     "outputs": {
         "sajPrincipalId": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2021-03-01-preview', 'Full').identity.principalId]"
+            "value": "[reference(resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName')), '2019-06-01', 'Full').identity.principalId]"
         }
     }
 }

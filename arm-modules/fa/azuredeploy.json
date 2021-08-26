@@ -152,7 +152,7 @@
                 "accessPolicies": [
                     {
                         "tenantId": "[parameters('tenantId')]",
-                        "objectId": "[reference(resourceId(resourceGroup().name,'Microsoft.DataFactory/factories',variables('functionAppName')),'2018-06-01','Full').identity.principalId]",
+                        "objectId": "[reference(resourceId(resourceGroup().name,'Microsoft.Web/sites',variables('functionAppName')),'2018-06-01','Full').identity.principalId]",
                         "permissions": {
                             "secrets": [
                                 "get",
