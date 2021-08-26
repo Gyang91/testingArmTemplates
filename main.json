@@ -406,7 +406,6 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAdb')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplAsql')]",
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplFa')]",
                 "[resourceId('Microsoft.Resources/deployments', 'lkTemplCdb')]"
             ]
         },
