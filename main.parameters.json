@@ -12,7 +12,7 @@
             "value": "s"
         },
         "adbDeployment": {
-            "value": true
+            "value": false
         },
         "apiManagementDeployment": {
             "value": false
