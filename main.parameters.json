@@ -6,7 +6,7 @@
             "value": "d"
         },
         "dataProduct": {
-            "value": "efg" 
+            "value": "uio" 
         },
         "dataProductSize": {
             "value": "s"
@@ -18,22 +18,22 @@
             "value": false
         },
         "cosmoDeployment": {
-            "value": true
+            "value": false
         },
         "eventhubDeployment": {
-            "value": true
+            "value": false
         },
         "functionDeployment": {
-            "value": true
+            "value": false
         },
         "iotHubDeployment": {
             "value": true
         },
         "logicAppDeployment": {
-            "value": true
+            "value": false
         },
         "streamAnalyticsDeployment": {
-            "value": true
+            "value": false
         },
         "initialWorkspaceAdminObjectId": {
             "value": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60"
