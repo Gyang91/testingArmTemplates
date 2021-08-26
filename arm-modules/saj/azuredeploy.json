@@ -78,41 +78,13 @@
                 "eventsOutOfOrderMaxDelayInSeconds": 10,
                 "compatibilityLevel": "1.0",
                 "outputStartMode": "JobStartTime",
-                "inputs": [],
                 "transformation": {
-                    "name": "ProcessSampleData",
+                    "name": "Transformation",
                     "properties": {
                         "streamingUnits": "[int(variables('streamingUnits'))]",
-                        "query": "select deviceId, deviceSequenceNumber, type, complexData, value, eventId, PartitionId, createdAt, EventEnqueuedUtcTime AS enqueuedAt, EventProcessedUtcTime AS processedAt, UDF.GetCurrentDateTime('') AS processedAt2 from inputEventHub partition by PartitionId"
+                        "query": "SELECT\r\n    *\r\nINTO\r\n    [YourOutputAlias]\r\nFROM\r\n    [YourInputAlias]"
                     }
-                },
-                "functions": [
-                    {
-                        "name": "GetCurrentDateTime",
-                        "type": "Microsoft.StreamAnalytics/streamingjobs/functions",
-                        "properties": {
-                            "type": "Scalar",
-                            "properties": {
-                                "inputs": [
-                                    {
-                                        "dataType": "any",
-                                        "isConfigurationParameter": null
-                                    }
-                                ],
-                                "output": {
-                                    "dataType": "any"
-                                },
-                                "binding": {
-                                    "type": "Microsoft.StreamAnalytics/JavascriptUdf",
-                                    "properties": {
-                                        "script": "// Sample UDF which returns current timestamp.\nfunction main(s) {\n    return new Date().toISOString();\n}"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ],
-                "outputs": []
+                }
             }
         }
     ],

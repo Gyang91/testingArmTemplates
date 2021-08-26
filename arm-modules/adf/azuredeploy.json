@@ -274,6 +274,7 @@
                         "description": "[concat('Linked Service to the Azure Function in the resource group ',resourceGroup().name)]"
                     },
                     "dependsOn": [
+                        "[resourceId('Microsoft.DataFactory/factories/linkedservices', variables('dataFactoryName'), 'arm_ls_kv')]",
                         "[resourceId('Microsoft.DataFactory/factories', variables('dataFactoryName'))]"
                     ]
                 }
