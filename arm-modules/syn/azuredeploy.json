@@ -149,7 +149,7 @@
       },
       {
         "type": "Microsoft.Synapse/workspaces",
-        "apiVersion": "2019-06-01-preview",
+        "apiVersion": "2021-05-01",
         "name": "[variables('workspaceName')]",
         "tags": "[parameters('resourceTags')]",
         "location": "[parameters('location')]",
@@ -160,6 +160,9 @@
           "[variables('dlsFsName')]"
         ],
         "properties": {
+          "cspWorkspaceAdminProperties": {
+            "initialWorkspaceAdminObjectId": "568ba8c2-1e2a-41e6-ac0e-d233dd744a14"
+          },
           "defaultDataLakeStorage": {
             "accountUrl": "[parameters('dlsAccountUrl')]",
             "filesystem": "[if(parameters('dlsDeployment'),variables('dlsFsName'),parameters('dlsFsName'))]"
@@ -291,7 +294,7 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Synapse/workspaces/sqlPools', variables('workspaceName'), variables('sqlPoolName'))]"
             ]
-        } 
+        }
     ],
     "outputs": {
         "synapsePrincipalId": {
