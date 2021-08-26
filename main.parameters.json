@@ -6,13 +6,13 @@
             "value": "d"
         },
         "dataProduct": {
-            "value": "def" 
+            "value": "efg" 
         },
         "dataProductSize": {
             "value": "s"
         },
         "adbDeployment": {
-            "value": false
+            "value": true
         },
         "apiManagementDeployment": {
             "value": false
