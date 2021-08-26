@@ -22,9 +22,6 @@
                 "description": "Location for all services"
             }
         },
-        "resourceTags": {
-            "type": "object"
-        },
         "iotHubMessageRetentionInDays": {
             "type": "int",
             "defaultValue": 1,
