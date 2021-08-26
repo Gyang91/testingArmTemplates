@@ -150,7 +150,7 @@
                         {
                             "type": "Microsoft.Authorization/roleAssignments",
                             "apiVersion": "2020-04-01-preview",
-                            "name": "[guid(uniqueString(resourceGroup().id,variables('streamingJobName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
+                            "name": "[guid(uniqueString(resourceGroup().id,variables('streamingJobName'),variables('eventHubName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
                             "scope": "[concat('Microsoft.EventHub/namespaces', '/', variables('eventHubNamespaceName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('AzureEventHubsDataOwner')]",

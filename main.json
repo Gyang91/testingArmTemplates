@@ -317,7 +317,9 @@
                     }
                 }
             },
-            "dependsOn": []
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplDls')]"
+            ]
         },
         {
             "condition": "[parameters('apiManagementDeployment')]",
