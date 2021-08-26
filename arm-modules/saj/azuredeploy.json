@@ -84,7 +84,7 @@
     "resources": [
         {
             "type": "Microsoft.StreamAnalytics/StreamingJobs",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2017-04-01-preview",
             "name": "[variables('streamingJobName')]",
             "tags": "[parameters('resourceTags')]",
             "location": "[parameters('location')]",
