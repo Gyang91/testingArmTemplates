@@ -140,7 +140,7 @@
                             "type": "Microsoft.Authorization/roleAssignments",
                             "apiVersion": "2020-04-01-preview",
                             "name": "[guid(uniqueString(resourceGroup().id,variables('cosmosDbAccountName')))]", //https://winterdom.com/2018/08/02/rbac-role-assignments-in-arm-templates
-                            "scope": "[concat('Microsoft.Storage/databaseAccounts', '/', variables('cosmosDbAccountName'))]",
+                            "scope": "[concat('Microsoft.DocumentDB/databaseAccounts', '/', variables('cosmosDbAccountName'))]",
                             "properties": {
                                 "roleDefinitionId": "[variables('DocumentDbAccountContributor')]",
                                 "principalId": "[parameters('dataFactoryPrincipalId')]",
