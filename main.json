@@ -138,6 +138,27 @@
             "metadata": {
                 "description": "description"
             }
+        },
+        "userObjectId": {
+            "type": "array",
+            "defaultValue": [
+                {
+                    "Id": "0789cf13-eb1c-4b52-8e7e-6b3e15ef18f1" //George
+                },
+                {
+                    "Id": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60" //Giang
+                }
+            ],
+            "metadata": {
+                "description": "User principals Objects with permissions."
+            }
+        },
+        "spObjectId": {
+            "type": "securestring",
+            "defaultValue": "7c595102-1d7e-493e-8c36-432344422d5b", // Service Principal cs-dte-avalon-sp
+            "metadata": {
+                "description": "Service principal Object Id"
+            }
         }
     },
     "functions": [],
@@ -492,6 +513,12 @@
                     },
                     "functionDeployment": {
                         "value": "[parameters('functionDeployment')]"
+                    },
+                    "userObjectId": {
+                        "value": "[parameters('userObjectId')]"
+                    },
+                    "spObjectId": {
+                        "value": "[parameters('spObjectId')]"
                     }
                 }
             },
