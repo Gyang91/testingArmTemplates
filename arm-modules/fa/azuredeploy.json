@@ -68,7 +68,7 @@
     "variables": {
         "functionAppName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
         "hostingPlanName": "[variables('functionAppName')]",
-        "applicationInsightsName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ai'))]",
+        "applicationInsightsName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'ai'))]",
         "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
         "functionWorkerRuntime": "[parameters('runtime')]",
         "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]"

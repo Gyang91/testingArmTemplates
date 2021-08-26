@@ -95,7 +95,7 @@
         "adbWorkSpaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-dbr'))]",
         "machineLearningWorkspaceName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-aml'))]",
         "cosmosDbAccountName": "[toLower(concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-cdb'))]",
-        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]",
+        "functionAppName": "[concat('cs-',parameters('dataProduct'),'-',parameters('environment'),'-fa')]"
     },
     "resources": [
         {

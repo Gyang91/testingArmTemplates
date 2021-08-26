@@ -102,6 +102,12 @@
             "metadata": {
                 "description": "country code"
             }
+        },
+        "initialWorkspaceAdminObjectId": {
+          "type": "string",
+          "metadata": {
+            "description": "Initial WorkspaceAdmin in Synapse"
+          }
         }
     },
     "variables": {
@@ -161,7 +167,7 @@
         ],
         "properties": {
           "cspWorkspaceAdminProperties": {
-            "initialWorkspaceAdminObjectId": "568ba8c2-1e2a-41e6-ac0e-d233dd744a14"
+            "initialWorkspaceAdminObjectId": "[parameters('initialWorkspaceAdminObjectId')]"
           },
           "defaultDataLakeStorage": {
             "accountUrl": "[parameters('dlsAccountUrl')]",

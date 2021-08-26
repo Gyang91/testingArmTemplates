@@ -132,6 +132,12 @@
             "metadata": {
                 "description": "The email address of the owner of the service"
             }
+        },
+        "initialWorkspaceAdminObjectId": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
         }
     },
     "functions": [],
@@ -607,6 +613,9 @@
                     },
                     "countryCode": {
                         "value": "[parameters('countryCode')]"
+                    },
+                    "initialWorkspaceAdminObjectId": {
+                        "value": "[parameters('initialWorkspaceAdminObjectId')]"
                     }
                 },
                 "dependsOn": [
