@@ -6,13 +6,13 @@
             "value": "d"
         },
         "dataProduct": {
-            "value": "qwer" 
+            "value": "qwert" 
         },
         "dataProductSize": {
             "value": "s"
         },
         "adbDeployment": {
-            "value": false
+            "value": true
         },
         "apiManagementDeployment": {
             "value": false
