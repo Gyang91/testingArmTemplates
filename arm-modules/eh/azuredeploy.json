@@ -52,21 +52,21 @@
                 "tier": "Basic",
                 "capacity": 1,
                 "isAutoInflateEnabled": false,
-                "maximumThroughputUnits": 1
+                "maximumThroughputUnits": 0
             },
             "m": {
                 "name": "Basic",
                 "tier": "Basic",
                 "capacity": 2,
                 "isAutoInflateEnabled": false,
-                "maximumThroughputUnits": 2
+                "maximumThroughputUnits": 0
             },
             "l": {
                 "name": "Standard",
                 "tier": "Standard",
                 "capacity": 3,
                 "isAutoInflateEnabled": true,
-                "maximumThroughputUnits": 0
+                "maximumThroughputUnits": 2
             }
         },
         "eventhubSkuName": "[variables('eventhubScale')[parameters('dataProductSize')].name]",

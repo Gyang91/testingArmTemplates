@@ -354,7 +354,9 @@
                     }
                 }
             },
-            "dependsOn": []
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplAml')]"
+            ]
         },
         {
             "type": "Microsoft.Resources/deployments",

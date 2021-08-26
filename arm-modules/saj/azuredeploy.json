@@ -63,7 +63,7 @@
     "resources": [
         {
             "type": "Microsoft.StreamAnalytics/StreamingJobs",
-            "apiVersion": "2020-03-01",
+            "apiVersion": "2017-04-01-preview",
             "name": "[variables('streamingJobName')]",
             "tags": "[parameters('resourceTags')]",
             "location": "[parameters('location')]",
@@ -76,7 +76,7 @@
                 },
                 "eventsOutOfOrderPolicy": "drop",
                 "eventsOutOfOrderMaxDelayInSeconds": 10,
-                "compatibilityLevel": "1.2",
+                "compatibilityLevel": "1.0",
                 "outputStartMode": "JobStartTime",
                 "inputs": [],
                 "transformation": {
