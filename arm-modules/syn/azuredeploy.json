@@ -102,12 +102,6 @@
             "metadata": {
                 "description": "country code"
             }
-        },
-        "initialWorkspaceAdminObjectId": {
-          "type": "string",
-          "metadata": {
-            "description": "Initial WorkspaceAdmin in Synapse"
-          }
         }
     },
     "variables": {
@@ -166,9 +160,6 @@
           "[variables('dlsFsName')]"
         ],
         "properties": {
-          "cspWorkspaceAdminProperties": {
-            "initialWorkspaceAdminObjectId": "[parameters('initialWorkspaceAdminObjectId')]"
-          },
           "defaultDataLakeStorage": {
             "accountUrl": "[parameters('dlsAccountUrl')]",
             "filesystem": "[if(parameters('dlsDeployment'),variables('dlsFsName'),parameters('dlsFsName'))]"
