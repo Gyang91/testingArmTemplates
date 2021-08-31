@@ -321,7 +321,9 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplDls')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplDls')]",
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplEh')]",
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplIoth')]"
             ]
         },
         {
