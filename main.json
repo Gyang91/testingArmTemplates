@@ -135,6 +135,7 @@
         },
         "initialWorkspaceAdminObjectId": {
             "type": "string",
+            "defaultValue": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60",
             "metadata": {
                 "description": "description"
             }
