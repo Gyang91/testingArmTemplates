@@ -25,9 +25,17 @@
                 },
                 {
                     "Id": "6daf350c-1cbe-4feb-91ed-5ce7799fcb60" //Giang
-                },
+                }
+            ],
+            "metadata": {
+                "description": "User principals Objects with permissions."
+            }
+        },
+         "groupObjectId": {
+            "type": "array",
+            "defaultValue": [
                 {
-                    "Id": "b902d5d2-e57e-4831-81b4-eca7557c9ca7" //AD Group
+                    "Id": "b902d5d2-e57e-4831-81b4-eca7557c9ca7"
                 }
             ],
             "metadata": {
@@ -187,7 +195,7 @@
                 "principalType": "ServicePrincipal"
             }
         },
-        {
+        /*{
             "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2020-04-01-preview",
             "copy": {
@@ -200,6 +208,21 @@
                 "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
                 "principalId": "[parameters('userObjectId')[copyIndex('assignment')].Id]",
                 "principalType": "User"
+            }
+        },*/
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2020-04-01-preview",
+            "copy": {
+                "name": "assignment",
+                "count": "[length(parameters('groupObjectId'))]"
+            },
+            "name": "[guid(uniqueString(resourceGroup().id,parameters('groupObjectId')[copyIndex('assignment')].Id))]",
+            "scope": "[concat('Microsoft.Storage/storageAccounts/', parameters('storageName'))]",
+            "properties": {
+                "roleDefinitionId": "[variables('StorageBlobDataContributor')]",
+                "principalId": "[parameters('groupObjectId')[copyIndex('assignment')].Id]",
+                "principalType": "Group"
             }
         },
         {
@@ -229,14 +252,14 @@
             "apiVersion": "2020-04-01-preview",
             "copy": {
                 "name": "assignment",
-                "count": "[length(parameters('userObjectId'))]"
+                "count": "[length(parameters('groupObjectId'))]"
             },
-            "name": "[guid(uniqueString(resourceGroup().id,'1',parameters('userObjectId')[copyIndex('assignment')].Id))]",
+            "name": "[guid(uniqueString(resourceGroup().id,'1',parameters('groupObjectId')[copyIndex('assignment')].Id))]",
             "scope": "[concat('Microsoft.Databricks/workspaces/', variables('adbWorkspaceName'))]",
             "properties": {
                 "roleDefinitionId": "[variables('Contributor')]",
-                "principalId": "[parameters('userObjectId')[copyIndex('assignment')].Id]",
-                "principalType": "User"
+                "principalId": "[parameters('groupObjectId')[copyIndex('assignment')].Id]",
+                "principalType": "Group"
             }
         },
         {
