@@ -24,7 +24,7 @@
         },
         "environment": {
             "type": "string",
-            "defaultValue":"d",
+            "defaultValue": "d",
             "metadata": {
                 "description": "Development environment"
             }
@@ -45,17 +45,17 @@
                 "description": "Determines whether or not to put the storage account behind VNet"
             }
         },
-           "resourceTags": {
+        "resourceTags": {
             "type": "object"
         },
-                "countryCode": {
+        "countryCode": {
             "type": "string",
             "defaultValue": "cs",
             "metadata": {
                 "description": "country code"
             }
         }
-     },
+    },
     "variables": {
         "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
         "dlsFsName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-fs')]",
@@ -63,10 +63,19 @@
         "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
         "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
         "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "synapseName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-syn'))]",
+        "workspaceName": "[toLower(concat(variables('synapseName'),'ws'))]",
+        "synapseResourceId": "[concat('/subscriptions/',subscription().id,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'))]",
         "computeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]",
         "adbFeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbFeSnetName'))]",
         "adbBeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbBeSnetName'))]",
         "networkRuleSetBehindVNet": {
+            "resourceAccessRules": [
+                {
+                    "tenantId": "[subscription().tenantId]",
+                    "resourceId": "[variables('synapseResourceId')]"
+                }
+            ],
             "defaultAction": "deny",
             "bypass": "AzureServices",
             "virtualNetworkRules": [
@@ -127,9 +136,9 @@
             "type": "string",
             "value": "[variables('storageAccountName')]"
         },
-         "storageAccountConnectionString": {
+        "storageAccountConnectionString": {
             "type": "string",
-            "value": "[reference(variables('storageAccountName')).primaryEndpoints.dfs]"     
+            "value": "[reference(variables('storageAccountName')).primaryEndpoints.dfs]"
         },
         "dlsFsName": {
             "type": "string",
