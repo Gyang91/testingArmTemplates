@@ -469,7 +469,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', 'lkTemplSnet')]"
+                "[resourceId('Microsoft.Resources/deployments', 'lkTemplKv')]"
             ]
         },
         {
