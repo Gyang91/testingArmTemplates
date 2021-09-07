@@ -58,11 +58,13 @@
     },
     "variables": {
         "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
+        "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
         "dlsFsName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-fs')]",
         "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
         "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
         "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
         "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "keyVaultName": "[toLower(concat(parameters('countryCode'),'-dp-',parameters('dataProduct'),'-',parameters('environment'),'-kv'))]",
         "synapseName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-syn'))]",
         "workspaceName": "[toLower(concat(variables('synapseName'),'ws'))]",
         "synapseResourceId": "[concat('/subscriptions/',subscription().id,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.Synapse/workspaces/',variables('workspaceName'))]",
@@ -129,6 +131,32 @@
                     }
                 }
             ]
+        },
+        {
+            //https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-resources#iteration-for-a-child-resource
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2021-04-01-preview",
+            "name": "[concat(variables('keyVaultName'),'/','adlsUrl')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "value": "[reference(variables('storageAccountName')).primaryEndpoints.dfs]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ]
+        },
+        {
+            //https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-resources#iteration-for-a-child-resource
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2021-04-01-preview",
+            "name": "[concat(variables('keyVaultName'),'/','adlsKey')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "value": "[listKeys(variables('storageAccountId'), '2019-04-01').keys[0].value]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ]
         }
     ],
     "outputs": {
@@ -136,13 +164,14 @@
             "type": "string",
             "value": "[variables('storageAccountName')]"
         },
+          "dlsFsName": {
+            "type": "string",
+            "value": "[variables('dlsFsName')]"
+        },
         "storageAccountConnectionString": {
             "type": "string",
             "value": "[reference(variables('storageAccountName')).primaryEndpoints.dfs]"
-        },
-        "dlsFsName": {
-            "type": "string",
-            "value": "[variables('dlsFsName')]"
         }
+      
     }
 }
