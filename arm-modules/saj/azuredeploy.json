@@ -44,7 +44,7 @@
                 "description": "country code"
             }
         },
-         "iotHubDeployment": {
+        "iotHubDeployment": {
             "type": "bool",
             "defaultValue": true,
             "metadata": {
@@ -56,6 +56,29 @@
             "defaultValue": true,
             "metadata": {
                 "description": "Decides to deploy or not to deploy Event Hub"
+            }
+        },
+        "storageSku": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_ZRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+            ],
+            "metadata": {
+                "description": "Defines the type of storage account to use for the data lake store"
+            }
+        },
+        "storageAccountBehindVNet": {
+            "type": "bool",
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Determines whether or not to put the storage account behind VNet"
             }
         }
     },
@@ -76,10 +99,46 @@
         "StorageBlobDataContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
         "IoTHubDataContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4fc6c259-987e-4a07-842e-c321cc9d413f')]",
         "AzureEventHubsDataOwner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'f526a384-b230-433a-b45c-95f59c4a2dec')]",
-         "eventHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-eh')]",
+        "eventHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-eh')]",
         "eventHubNamespaceName": "[concat(variables('eventHubName'), '-ns')]",
         "iotHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ioth')]",
-        "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]"
+        "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
+        "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
+        "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
+        "vnetName": "[concat(parameters('dataProduct'),'-',parameters('environment'),'-vnet')]",
+        "streamingJobResourceId": "[resourceId(resourceGroup().name,'Microsoft.StreamAnalytics/StreamingJobs',variables('streamingJobName'))]",
+        "computeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('computeSnetName'))]",
+        "adbFeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbFeSnetName'))]",
+        "adbBeSubnet": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('adbBeSnetName'))]",
+        "storageAccountName": "[toLower(concat(parameters('countryCode'),parameters('dataProduct'),parameters('environment'),'dls'))]",
+        "networkRuleSetBehindVNet": {
+            "resourceAccessRules": [
+                {
+                    "tenantId": "[subscription().tenantId]",
+                    "resourceId": "[variables('streamingJobResourceId')]"
+                }
+            ],
+            "defaultAction": "deny",
+            "bypass": "AzureServices",
+            "virtualNetworkRules": [
+                {
+                    "action": "Allow",
+                    "id": "[variables('computeSubnet')]"
+                },
+                {
+                    "action": "Allow",
+                    "id": "[variables('adbFeSubnet')]"
+                },
+                {
+                    "action": "Allow",
+                    "id": "[variables('adbBeSubnet')]"
+                }
+            ]
+        },
+        "networkRuleSetDefault": {
+            "defaultAction": "Allow",
+            "bypass": "AzureServices"
+        }
     },
     "resources": [
         {
@@ -192,6 +251,23 @@
             "dependsOn": [
                 "[resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamingJobName'))]"
             ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "name": "[variables('storageAccountName')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('storageSku')]"
+            },
+            "properties": {
+                "accessTier": "Hot",
+                "isHnsEnabled": true,
+                "supportsHttpsTrafficOnly": true,
+                "networkAcls": "[if(parameters('storageAccountBehindVNet'), variables('networkRuleSetBehindVNet'), variables('networkRuleSetDefault'))]"
+            }
         }
     ],
     "outputs": {
