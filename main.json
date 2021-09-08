@@ -313,6 +313,12 @@
                     },
                     "storageAccountBehindVNet": {
                         "value": "[parameters('storageAccountBehindVNet')]"
+                    },
+                    "eventhubDeployment": {
+                        "value": "[parameters('eventhubDeployment')]"
+                    },
+                    "iotHubDeployment": {
+                        "value": "[parameters('iotHubDeployment')]"
                     }
                 }
             },

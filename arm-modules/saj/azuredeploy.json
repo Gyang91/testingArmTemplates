@@ -102,6 +102,9 @@
         "eventHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-eh')]",
         "eventHubNamespaceName": "[concat(variables('eventHubName'), '-ns')]",
         "iotHubName": "[concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-ioth')]",
+        "synapseName": "[toLower(concat(parameters('countryCode'),'-',parameters('dataProduct'),'-',parameters('environment'),'-syn'))]",
+        "workspaceName": "[toLower(concat(variables('synapseName'),'ws'))]",
+        "synapseResourceId": "[resourceId(resourceGroup().name,'Microsoft.Synapse/workspaces',variables('workspaceName'))]",
         "adbBeSnetName": "[concat(parameters('dataProduct'),'-be-',parameters('environment'),'-dbr','-snet')]",
         "adbFeSnetName": "[concat(parameters('dataProduct'),'-fe-',parameters('environment'),'-dbr','-snet')]",
         "computeSnetName": "[concat(parameters('dataProduct'),'-compute-',parameters('environment'),'-snet')]",
@@ -116,6 +119,10 @@
                 {
                     "tenantId": "[subscription().tenantId]",
                     "resourceId": "[variables('streamingJobResourceId')]"
+                },
+                {
+                    "tenantId": "[subscription().tenantId]",
+                    "resourceId": "[variables('synapseResourceId')]"
                 }
             ],
             "defaultAction": "deny",
