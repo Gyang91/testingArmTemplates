@@ -310,6 +310,9 @@
                     },
                     "dataProductSize": {
                         "value": "[parameters('dataProductSize')]"
+                    },
+                    "storageAccountBehindVNet": {
+                        "value": "[parameters('storageAccountBehindVNet')]"
                     }
                 }
             },
